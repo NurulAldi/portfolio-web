@@ -52,10 +52,6 @@ export function getAllProjects(): Project[] {
   return loadProjects().filter(project => project.published);
 }
 
-export function getFeaturedProjects(): Project[] {
-  return loadProjects().filter(project => project.published && project.featured);
-}
-
 export function getProjectBySlug(slug: string): Project | undefined {
   return loadProjects().find(project => project.slug === slug && project.published);
 }

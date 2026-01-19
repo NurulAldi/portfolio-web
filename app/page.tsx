@@ -1,13 +1,11 @@
 'use client';
 
-import { getAllProjects, getFeaturedProjects } from '@/lib/projects';
+import { getAllProjects } from '@/lib/projects';
 import ProjectCard from '@/components/ProjectCard';
 import { FormEvent, useState } from 'react';
 
 export default function HomePage() {
   const allProjects = getAllProjects();
-  const featuredProjects = getFeaturedProjects();
-  const otherProjects = allProjects.filter(p => !p.featured);
 
   const [formState, setFormState] = useState({
     name: '',
@@ -34,7 +32,7 @@ export default function HomePage() {
   return (
     <>
       {/* Hero Section */}
-      <section className="section-container py-16 md:py-24 lg:py-32">
+      <section className="min-h-[calc(100vh-4rem)] flex items-center section-container py-16 md:py-24 lg:py-32">
         <div className="max-w-5xl mx-auto">
           <div className="text-center space-y-6 md:space-y-8">
             {/* Greeting */}
@@ -80,7 +78,7 @@ export default function HomePage() {
       </section>
 
       {/* Projects Section */}
-      <section id="projects" className="bg-slate-50/50">
+      <section id="projects" className="min-h-[calc(100vh-4rem)] bg-slate-50/50">
         <div className="section-container py-16 md:py-20">
           {/* Header */}
           <div className="max-w-3xl mb-12 md:mb-16">
@@ -93,38 +91,14 @@ export default function HomePage() {
             </p>
           </div>
 
-          {/* Featured Projects */}
-          {featuredProjects.length > 0 && (
-            <div className="mb-12 md:mb-16">
-              <div className="flex items-center gap-3 mb-6 md:mb-8">
-                <h3 className="text-2xl md:text-3xl font-bold text-slate-900">Featured Projects</h3>
-                <div className="h-1 flex-1 bg-primary/20 rounded-full max-w-[80px]"></div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-                {featuredProjects.map((project) => (
-                  <ProjectCard key={project.id} project={project} />
-                ))}
-              </div>
+          {/* Projects Grid */}
+          {allProjects.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+              {allProjects.map((project) => (
+                <ProjectCard key={project.id} project={project} />
+              ))}
             </div>
-          )}
-
-          {/* All Projects */}
-          {otherProjects.length > 0 && (
-            <div>
-              <div className="flex items-center gap-3 mb-6 md:mb-8">
-                <h3 className="text-2xl md:text-3xl font-bold text-slate-900">More Projects</h3>
-                <div className="h-1 flex-1 bg-slate-200 rounded-full max-w-[80px]"></div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-                {otherProjects.map((project) => (
-                  <ProjectCard key={project.id} project={project} />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Empty State */}
-          {allProjects.length === 0 && (
+          ) : (
             <div className="text-center py-20">
               <div className="text-slate-400 mb-4">
                 <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -138,7 +112,7 @@ export default function HomePage() {
       </section>
 
       {/* Contact Section */}
-      <section id="contact" className="section-container py-16 md:py-20">
+      <section id="contact" className="min-h-[calc(100vh-4rem)] section-container py-16 md:py-20">
         <div className="max-w-5xl mx-auto">
           {/* Header */}
           <div className="text-center mb-10 md:mb-12">
