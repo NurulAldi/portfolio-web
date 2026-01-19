@@ -15,10 +15,12 @@ export default function ProjectForm({ project, onSubmit, onCancel }: ProjectForm
   const [formData, setFormData] = useState({
     title: project?.title || '',
     summary: project?.summary || '',
-    tags: project?.tags.join(', ') || '',
     image: project?.image || '/placeholder-project.jpg',
     githubUrl: project?.githubUrl || '',
   });
+  
+  const [tags, setTags] = useState<string[]>(project?.tags || []);
+  const [tagInput, setTagInput] = useState('');
   
   const [descriptionBlocks, setDescriptionBlocks] = useState<ContentBlock[]>(
     project?.description || []
@@ -30,23 +32,36 @@ export default function ProjectForm({ project, onSubmit, onCancel }: ProjectForm
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     
-    // Parse tags
-    const tagsArray = formData.tags
-      .split(',')
-      .map(tag => tag.trim())
-      .filter(tag => tag.length > 0);
-    
     const projectData: Omit<Project, 'id'> = {
       slug: slug,
       title: formData.title,
       summary: formData.summary,
       description: descriptionBlocks,
-      tags: tagsArray,
+      tags: tags,
       image: formData.image,
       githubUrl: formData.githubUrl || undefined,
     };
     
     onSubmit(projectData);
+  };
+
+  const handleAddTag = () => {
+    const trimmedTag = tagInput.trim();
+    if (trimmedTag && !tags.includes(trimmedTag) && tags.length < 5) {
+      setTags([...tags, trimmedTag]);
+      setTagInput('');
+    }
+  };
+
+  const handleRemoveTag = (tagToRemove: string) => {
+    setTags(tags.filter(tag => tag !== tagToRemove));
+  };
+
+  const handleTagInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleAddTag();
+    }
   };
 
   return (
@@ -88,21 +103,10 @@ export default function ProjectForm({ project, onSubmit, onCancel }: ProjectForm
           />
         </div>
 
-        {/* Block Editor for Description */}
-        <div>
-          <label className="block text-sm font-semibold text-slate-900 mb-3">
-            Description (Block Editor) *
-          </label>
-          <BlockEditor 
-            blocks={descriptionBlocks}
-            onChange={setDescriptionBlocks}
-          />
-        </div>
-
-        {/* Image URL */}
+        {/* Thumbnail Image */}
         <div>
           <label htmlFor="image" className="block text-sm font-semibold text-slate-900 mb-2">
-            Image URL *
+            Thumbnail Image *
           </label>
           <input
             type="url"
@@ -116,21 +120,63 @@ export default function ProjectForm({ project, onSubmit, onCancel }: ProjectForm
           <p className="text-xs text-slate-500 mt-1">Enter a URL to an image or path to local image in public folder</p>
         </div>
 
+        {/* Block Editor for Description */}
+        <div>
+          <label className="block text-sm font-semibold text-slate-900 mb-3">
+            Description (Block Editor) *
+          </label>
+          <BlockEditor 
+            blocks={descriptionBlocks}
+            onChange={setDescriptionBlocks}
+          />
+        </div>
+
         {/* Tags */}
         <div>
           <label htmlFor="tags" className="block text-sm font-semibold text-slate-900 mb-2">
-            Tags *
+            Tags * (Maksimal 5 tag)
           </label>
           <input
             type="text"
             id="tags"
-            required
-            value={formData.tags}
-            onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
+            value={tagInput}
+            onChange={(e) => setTagInput(e.target.value)}
+            onKeyDown={handleTagInputKeyDown}
             className="input-field"
-            placeholder="Next.js, TypeScript, Stripe, Tailwind CSS"
+            placeholder="Masukkan tag (misal: Python, Machine Learning, Data Analysis)"
+            disabled={tags.length >= 5}
           />
-          <p className="text-xs text-slate-500 mt-1">Comma-separated list</p>
+          {tags.length < 5 && (
+            <button
+              type="button"
+              onClick={handleAddTag}
+              disabled={!tagInput.trim()}
+              className="mt-2 text-sm text-primary hover:text-primary/80 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              + Tambah
+            </button>
+          )}
+          
+          {/* Tag Chips */}
+          {tags.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-3">
+              {tags.map((tag, index) => (
+                <span
+                  key={index}
+                  className="inline-flex items-center gap-2 px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-sm border border-slate-200"
+                >
+                  {tag}
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveTag(tag)}
+                    className="text-slate-500 hover:text-red-600 transition-colors"
+                  >
+                    ×
+                  </button>
+                </span>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* GitHub URL */}

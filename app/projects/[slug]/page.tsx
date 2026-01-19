@@ -109,7 +109,6 @@ export default function ProjectPage({ params }: ProjectPageProps) {
 
       {/* Project Description */}
       <div className="max-w-4xl">
-        <h2 className="text-2xl font-bold text-slate-900 mb-6">About This Project</h2>
         <div className="prose prose-lg max-w-none space-y-6">
           {Array.isArray(project.description) ? project.description.map((block) => {
             switch (block.type) {
