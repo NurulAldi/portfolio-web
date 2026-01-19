@@ -28,11 +28,6 @@ export default function ProjectCard({ project }: ProjectCardProps) {
             />
           </svg>
         </div>
-        {project.featured && (
-          <div className="absolute top-3 right-3 bg-primary text-white text-xs font-semibold px-3 py-1 rounded-full">
-            Featured
-          </div>
-        )}
       </div>
 
       {/* Project Content */}

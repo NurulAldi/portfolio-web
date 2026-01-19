@@ -126,16 +126,13 @@ export default function AdminProjectsPage() {
                 <thead className="bg-slate-50 border-b-2 border-slate-200">
                   <tr>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900">Title</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900">Slug</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900">Status</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900">Featured</th>
                     <th className="px-6 py-4 text-right text-sm font-semibold text-slate-900">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200">
                   {projects.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="px-6 py-12 text-center text-slate-500">
+                      <td colSpan={2} className="px-6 py-12 text-center text-slate-500">
                         No projects found. Add your first project to get started.
                       </td>
                     </tr>
@@ -147,27 +144,6 @@ export default function AdminProjectsPage() {
                             <p className="font-medium text-slate-900">{project.title}</p>
                             <p className="text-sm text-slate-500 line-clamp-1">{project.summary}</p>
                           </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <code className="text-sm text-slate-600 bg-slate-100 px-2 py-1 rounded">
-                            {project.slug}
-                          </code>
-                        </td>
-                        <td className="px-6 py-4">
-                          <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
-                            project.published 
-                              ? 'bg-green-100 text-green-800' 
-                              : 'bg-slate-100 text-slate-600'
-                          }`}>
-                            {project.published ? '✓ Published' : '○ Draft'}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4">
-                          {project.featured && (
-                            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary">
-                              ★ Featured
-                            </span>
-                          )}
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex items-center justify-end gap-2">
@@ -212,10 +188,8 @@ export default function AdminProjectsPage() {
           </div>
 
           {/* Stats */}
-          <div className="mt-6 flex gap-6 text-sm text-slate-600">
+          <div className="mt-6 text-sm text-slate-600">
             <div>Total Projects: <strong className="text-slate-900">{projects.length}</strong></div>
-            <div>Published: <strong className="text-slate-900">{projects.filter(p => p.published).length}</strong></div>
-            <div>Featured: <strong className="text-slate-900">{projects.filter(p => p.featured).length}</strong></div>
           </div>
         </>
       )}

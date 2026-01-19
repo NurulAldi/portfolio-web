@@ -1,7 +1,7 @@
 [
   {
     "id": "1",
-    "slug": "customer-churn-prediction",
+    "slug": "customer-churn",
     "title": "Customer Churn Prediction Model",
     "summary": "Machine learning model predicting customer churn with 92% accuracy for telecom industry",
     "description": "Developed a predictive model using ensemble methods (Random Forest, XGBoost) to identify customers at risk of churning. Performed extensive feature engineering, handled class imbalance using SMOTE, and implemented cross-validation for robust performance. Created interactive dashboards for business stakeholders to monitor churn risk scores and identify key retention factors. Model achieved 92% accuracy and 0.89 AUC-ROC score.",

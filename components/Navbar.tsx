@@ -82,7 +82,7 @@ export default function Navbar() {
             href="/" 
             className="text-xl md:text-2xl font-bold text-slate-900 hover:text-primary transition-colors"
           >
-            Portfolio
+            NA
           </Link>
           
           {/* Desktop Navigation */}

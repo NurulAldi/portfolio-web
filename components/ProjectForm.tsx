@@ -1,8 +1,9 @@
 'use client';
 
-import { FormEvent, useState, useEffect } from 'react';
-import type { Project } from '@/lib/projects';
+import { FormEvent, useState } from 'react';
+import type { Project, ContentBlock } from '@/lib/projects';
 import { generateSlug } from '@/lib/projects';
+import BlockEditor from './BlockEditor';
 
 interface ProjectFormProps {
   project?: Project; // If provided, form is in edit mode
@@ -12,27 +13,19 @@ interface ProjectFormProps {
 
 export default function ProjectForm({ project, onSubmit, onCancel }: ProjectFormProps) {
   const [formData, setFormData] = useState({
-    slug: project?.slug || '',
     title: project?.title || '',
     summary: project?.summary || '',
-    description: project?.description || '',
     tags: project?.tags.join(', ') || '',
     image: project?.image || '/placeholder-project.jpg',
     githubUrl: project?.githubUrl || '',
-    liveUrl: project?.liveUrl || '',
-    published: project?.published ?? true,
-    featured: project?.featured ?? false,
-    completedAt: project?.completedAt || new Date().toISOString().split('T')[0],
   });
+  
+  const [descriptionBlocks, setDescriptionBlocks] = useState<ContentBlock[]>(
+    project?.description || []
+  );
 
-  const [autoSlug, setAutoSlug] = useState(!project);
-
-  // Auto-generate slug from title
-  useEffect(() => {
-    if (autoSlug && formData.title) {
-      setFormData(prev => ({ ...prev, slug: generateSlug(formData.title) }));
-    }
-  }, [formData.title, autoSlug]);
+  // Auto-generate slug from title (always enabled)
+  const slug = generateSlug(formData.title);
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -44,17 +37,13 @@ export default function ProjectForm({ project, onSubmit, onCancel }: ProjectForm
       .filter(tag => tag.length > 0);
     
     const projectData: Omit<Project, 'id'> = {
-      slug: formData.slug,
+      slug: slug,
       title: formData.title,
       summary: formData.summary,
-      description: formData.description,
+      description: descriptionBlocks,
       tags: tagsArray,
       image: formData.image,
       githubUrl: formData.githubUrl || undefined,
-      liveUrl: formData.liveUrl || undefined,
-      published: formData.published,
-      featured: formData.featured,
-      completedAt: formData.completedAt,
     };
     
     onSubmit(projectData);
@@ -83,37 +72,6 @@ export default function ProjectForm({ project, onSubmit, onCancel }: ProjectForm
           />
         </div>
 
-        {/* Slug */}
-        <div>
-          <div className="flex items-center justify-between mb-2">
-            <label htmlFor="slug" className="block text-sm font-semibold text-slate-900">
-              Slug *
-            </label>
-            <label className="flex items-center gap-2 text-sm text-slate-600">
-              <input
-                type="checkbox"
-                checked={autoSlug}
-                onChange={(e) => setAutoSlug(e.target.checked)}
-                className="rounded border-slate-300 text-primary focus:ring-primary"
-              />
-              Auto-generate
-            </label>
-          </div>
-          <input
-            type="text"
-            id="slug"
-            required
-            value={formData.slug}
-            onChange={(e) => {
-              setAutoSlug(false);
-              setFormData({ ...formData, slug: e.target.value });
-            }}
-            className="input-field"
-            placeholder="ecommerce-platform"
-          />
-          <p className="text-xs text-slate-500 mt-1">URL: /projects/{formData.slug}</p>
-        </div>
-
         {/* Summary */}
         <div>
           <label htmlFor="summary" className="block text-sm font-semibold text-slate-900 mb-2">
@@ -130,20 +88,32 @@ export default function ProjectForm({ project, onSubmit, onCancel }: ProjectForm
           />
         </div>
 
-        {/* Description */}
+        {/* Block Editor for Description */}
         <div>
-          <label htmlFor="description" className="block text-sm font-semibold text-slate-900 mb-2">
-            Description *
+          <label className="block text-sm font-semibold text-slate-900 mb-3">
+            Description (Block Editor) *
           </label>
-          <textarea
-            id="description"
-            required
-            value={formData.description}
-            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-            rows={6}
-            className="input-field resize-none"
-            placeholder="Detailed description of the project, features, and technologies used..."
+          <BlockEditor 
+            blocks={descriptionBlocks}
+            onChange={setDescriptionBlocks}
           />
+        </div>
+
+        {/* Image URL */}
+        <div>
+          <label htmlFor="image" className="block text-sm font-semibold text-slate-900 mb-2">
+            Image URL *
+          </label>
+          <input
+            type="url"
+            id="image"
+            required
+            value={formData.image}
+            onChange={(e) => setFormData({ ...formData, image: e.target.value })}
+            className="input-field"
+            placeholder="https://example.com/image.jpg or /project-image.jpg"
+          />
+          <p className="text-xs text-slate-500 mt-1">Enter a URL to an image or path to local image in public folder</p>
         </div>
 
         {/* Tags */}
@@ -163,73 +133,19 @@ export default function ProjectForm({ project, onSubmit, onCancel }: ProjectForm
           <p className="text-xs text-slate-500 mt-1">Comma-separated list</p>
         </div>
 
-        {/* Links Row */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label htmlFor="githubUrl" className="block text-sm font-semibold text-slate-900 mb-2">
-              GitHub URL
-            </label>
-            <input
-              type="url"
-              id="githubUrl"
-              value={formData.githubUrl}
-              onChange={(e) => setFormData({ ...formData, githubUrl: e.target.value })}
-              className="input-field"
-              placeholder="https://github.com/username/repo"
-            />
-          </div>
-
-          <div>
-            <label htmlFor="liveUrl" className="block text-sm font-semibold text-slate-900 mb-2">
-              Live URL
-            </label>
-            <input
-              type="url"
-              id="liveUrl"
-              value={formData.liveUrl}
-              onChange={(e) => setFormData({ ...formData, liveUrl: e.target.value })}
-              className="input-field"
-              placeholder="https://example.com"
-            />
-          </div>
-        </div>
-
-        {/* Completed Date */}
+        {/* GitHub URL */}
         <div>
-          <label htmlFor="completedAt" className="block text-sm font-semibold text-slate-900 mb-2">
-            Completion Date *
+          <label htmlFor="githubUrl" className="block text-sm font-semibold text-slate-900 mb-2">
+            GitHub URL
           </label>
           <input
-            type="date"
-            id="completedAt"
-            required
-            value={formData.completedAt}
-            onChange={(e) => setFormData({ ...formData, completedAt: e.target.value })}
+            type="url"
+            id="githubUrl"
+            value={formData.githubUrl}
+            onChange={(e) => setFormData({ ...formData, githubUrl: e.target.value })}
             className="input-field"
+            placeholder="https://github.com/username/repo"
           />
-        </div>
-
-        {/* Checkboxes */}
-        <div className="flex gap-6">
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={formData.published}
-              onChange={(e) => setFormData({ ...formData, published: e.target.checked })}
-              className="w-5 h-5 rounded border-slate-300 text-primary focus:ring-primary"
-            />
-            <span className="text-sm font-medium text-slate-900">Published</span>
-          </label>
-
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={formData.featured}
-              onChange={(e) => setFormData({ ...formData, featured: e.target.checked })}
-              className="w-5 h-5 rounded border-slate-300 text-primary focus:ring-primary"
-            />
-            <span className="text-sm font-medium text-slate-900">Featured</span>
-          </label>
         </div>
 
         {/* Action Buttons */}

@@ -1,18 +1,20 @@
 import projectsData from '@/content/projects.json';
 
+export interface ContentBlock {
+  id: string;
+  type: 'paragraph' | 'heading' | 'quote' | 'image' | 'list';
+  content: string | string[];
+}
+
 export interface Project {
   id: string;
   slug: string;
   title: string;
   summary: string;
-  description: string;
+  description: ContentBlock[];
   tags: string[];
   image: string;
   githubUrl?: string;
-  liveUrl?: string;
-  published: boolean;
-  featured: boolean;
-  completedAt: string;
 }
 
 // Storage key for localStorage override
@@ -49,16 +51,15 @@ function saveProjects(projects: Project[]): void {
 // PUBLIC METHODS (for frontend display)
 
 export function getAllProjects(): Project[] {
-  return loadProjects().filter(project => project.published);
+  return loadProjects();
 }
 
 export function getProjectBySlug(slug: string): Project | undefined {
-  return loadProjects().find(project => project.slug === slug && project.published);
+  return loadProjects().find(project => project.slug === slug);
 }
 
 export function getAllProjectSlugs(): string[] {
   return loadProjects()
-    .filter(project => project.published)
     .map(project => project.slug);
 }
 

@@ -2,10 +2,17 @@
 
 import { getAllProjects } from '@/lib/projects';
 import ProjectCard from '@/components/ProjectCard';
-import { FormEvent, useState } from 'react';
+import { FormEvent, useState, useEffect } from 'react';
 
 export default function HomePage() {
-  const allProjects = getAllProjects();
+  const [allProjects, setAllProjects] = useState<ReturnType<typeof getAllProjects>>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Load projects on client side to avoid hydration mismatch
+    setAllProjects(getAllProjects());
+    setIsLoading(false);
+  }, []);
 
   const [formState, setFormState] = useState({
     name: '',
@@ -41,7 +48,7 @@ export default function HomePage() {
                 Hi there, I'm
               </p>
               <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold text-slate-900 tracking-tight">
-                <span className="block">Your Name</span>
+                <span className="block">Nurul Aldi</span>
               </h1>
             </div>
 
@@ -92,7 +99,11 @@ export default function HomePage() {
           </div>
 
           {/* Projects Grid */}
-          {allProjects.length > 0 ? (
+          {isLoading ? (
+            <div className="text-center py-20">
+              <div className="animate-pulse text-slate-400">Loading projects...</div>
+            </div>
+          ) : allProjects.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
               {allProjects.map((project) => (
                 <ProjectCard key={project.id} project={project} />
@@ -219,8 +230,8 @@ export default function HomePage() {
                   </div>
                   <div>
                     <h3 className="font-semibold text-slate-900 mb-1">Email</h3>
-                    <a href="mailto:hello@example.com" className="text-slate-600 hover:text-primary transition-colors">
-                      hello@example.com
+                    <a href="mailto:nurulaldi333@gmail.com" className="text-slate-600 hover:text-primary transition-colors">
+                      nurulaldi333@gmail.com
                     </a>
                   </div>
                 </div>
@@ -238,7 +249,7 @@ export default function HomePage() {
                     <h3 className="font-semibold text-slate-900 mb-2">Social</h3>
                     <div className="space-y-2">
                       <a 
-                        href="https://github.com" 
+                        href="https://github.com/NurulAldi" 
                         target="_blank" 
                         rel="noopener noreferrer"
                         className="block text-slate-600 hover:text-primary transition-colors"
@@ -246,20 +257,12 @@ export default function HomePage() {
                         GitHub →
                       </a>
                       <a 
-                        href="https://linkedin.com" 
+                        href="https://www.linkedin.com/in/nurul-aldi-60b072265" 
                         target="_blank" 
                         rel="noopener noreferrer"
                         className="block text-slate-600 hover:text-primary transition-colors"
                       >
                         LinkedIn →
-                      </a>
-                      <a 
-                        href="https://twitter.com" 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="block text-slate-600 hover:text-primary transition-colors"
-                      >
-                        Twitter →
                       </a>
                     </div>
                   </div>

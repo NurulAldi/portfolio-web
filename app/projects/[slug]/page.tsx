@@ -1,34 +1,36 @@
+'use client';
+
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { getProjectBySlug, getAllProjectSlugs } from '@/lib/projects';
-import type { Metadata } from 'next';
+import { getProjectBySlug } from '@/lib/projects';
+import { useEffect, useState, use } from 'react';
+import type { Project } from '@/lib/projects';
 
 interface ProjectPageProps {
-  params: { slug: string };
-}
-
-export async function generateStaticParams() {
-  const slugs = getAllProjectSlugs();
-  return slugs.map((slug) => ({ slug }));
-}
-
-export async function generateMetadata({ params }: ProjectPageProps): Promise<Metadata> {
-  const project = getProjectBySlug(params.slug);
-  
-  if (!project) {
-    return {
-      title: 'Project Not Found',
-    };
-  }
-
-  return {
-    title: project.title,
-    description: project.summary,
-  };
+  params: Promise<{ slug: string }>;
 }
 
 export default function ProjectPage({ params }: ProjectPageProps) {
-  const project = getProjectBySlug(params.slug);
+  const { slug } = use(params);
+  const [project, setProject] = useState<Project | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Fetch project data on client side to access localStorage
+    const projectData = getProjectBySlug(slug);
+    setProject(projectData || null);
+    setLoading(false);
+  }, [slug]);
+
+  if (loading) {
+    return (
+      <div className="section-container py-16">
+        <div className="max-w-4xl mx-auto text-center">
+          <div className="animate-pulse">Loading...</div>
+        </div>
+      </div>
+    );
+  }
 
   if (!project) {
     notFound();
@@ -54,17 +56,10 @@ export default function ProjectPage({ params }: ProjectPageProps) {
 
       {/* Project Header */}
       <div className="max-w-4xl">
-        <div className="flex items-start justify-between gap-4 mb-6">
-          <div>
-            <h1 className="text-4xl md:text-5xl font-bold text-slate-900 mb-4">
-              {project.title}
-            </h1>
-            {project.featured && (
-              <span className="inline-block bg-primary text-white text-sm font-semibold px-4 py-1 rounded-full mb-4">
-                Featured Project
-              </span>
-            )}
-          </div>
+        <div className="mb-6">
+          <h1 className="text-4xl md:text-5xl font-bold text-slate-900 mb-4">
+            {project.title}
+          </h1>
         </div>
 
         <p className="text-xl text-slate-600 mb-8">
@@ -85,25 +80,12 @@ export default function ProjectPage({ params }: ProjectPageProps) {
 
         {/* Links */}
         <div className="flex gap-4 mb-12">
-          {project.liveUrl && (
-            <a
-              href={project.liveUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn-primary inline-flex items-center gap-2"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-              </svg>
-              View Live Site
-            </a>
-          )}
           {project.githubUrl && (
             <a
               href={project.githubUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="btn-secondary inline-flex items-center gap-2"
+              className="btn-primary inline-flex items-center gap-2"
             >
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                 <path fillRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clipRule="evenodd" />
@@ -127,30 +109,54 @@ export default function ProjectPage({ params }: ProjectPageProps) {
 
       {/* Project Description */}
       <div className="max-w-4xl">
-        <h2 className="text-2xl font-bold text-slate-900 mb-4">About This Project</h2>
-        <div className="prose prose-lg max-w-none">
-          <p className="text-slate-600 leading-relaxed whitespace-pre-line">
-            {project.description}
-          </p>
-        </div>
-
-        {/* Additional Info */}
-        <div className="mt-12 p-6 bg-slate-50 rounded-lg border border-slate-200">
-          <h3 className="font-semibold text-slate-900 mb-2">Project Completed</h3>
-          <p className="text-slate-600">
-            {new Date(project.completedAt).toLocaleDateString('en-US', {
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric'
-            })}
-          </p>
-        </div>
-
-        {/* CTA */}
-        <div className="mt-12 text-center">
-          <Link href="/projects" className="btn-secondary">
-            ← View All Projects
-          </Link>
+        <h2 className="text-2xl font-bold text-slate-900 mb-6">About This Project</h2>
+        <div className="prose prose-lg max-w-none space-y-6">
+          {Array.isArray(project.description) ? project.description.map((block) => {
+            switch (block.type) {
+              case 'paragraph':
+                return (
+                  <p key={block.id} className="text-slate-600 leading-relaxed">
+                    {block.content}
+                  </p>
+                );
+              case 'heading':
+                return (
+                  <h3 key={block.id} className="text-xl font-bold text-slate-900 mt-8 mb-4">
+                    {block.content}
+                  </h3>
+                );
+              case 'quote':
+                return (
+                  <blockquote key={block.id} className="border-l-4 border-primary pl-4 py-2 italic text-slate-600 bg-slate-50 rounded-r">
+                    {block.content}
+                  </blockquote>
+                );
+              case 'image':
+                return (
+                  <div key={block.id} className="my-8">
+                    <img 
+                      src={block.content as string} 
+                      alt="Project content" 
+                      className="w-full rounded-lg border-2 border-slate-200"
+                    />
+                  </div>
+                );
+              case 'list':
+                return (
+                  <ul key={block.id} className="list-disc list-inside space-y-2 text-slate-600">
+                    {(block.content as string[]).map((item, index) => (
+                      <li key={index}>{item}</li>
+                    ))}
+                  </ul>
+                );
+              default:
+                return null;
+            }
+          }) : (
+            <p className="text-slate-600 leading-relaxed whitespace-pre-line">
+              {project.description as any}
+            </p>
+          )}
         </div>
       </div>
     </div>
