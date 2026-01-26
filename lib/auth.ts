@@ -1,53 +1,122 @@
-/*
- * ⚠️ SECURITY WARNING - TEMPORARY CLIENT-SIDE AUTH ⚠️
+/**
+ * Authentication Service using Supabase Auth
  * 
- * This is a PLACEHOLDER authentication implementation for development only.
- * 
- * CRITICAL LIMITATIONS:
- * - Credentials are hardcoded in client-side code (visible in browser)
- * - No password hashing or encryption
- * - Auth state stored in localStorage (can be manipulated by user)
- * - No session management or expiration
- * - No protection against XSS attacks
- * - Anyone can view source and see the password
- * 
- * FOR PRODUCTION, YOU MUST:
- * - Move authentication to server-side (API routes)
- * - Use proper password hashing (bcrypt, argon2)
- * - Implement HTTP-only secure cookies for session management
- * - Add CSRF protection
- * - Use environment variables for credentials
- * - Implement proper session expiration
- * - Consider using NextAuth.js or similar robust auth solution
+ * Features:
+ * - Email/Password authentication
+ * - Session management with HTTP-only cookies
+ * - Server and client-side auth checks
  */
 
-// ⚠️ TEMPORARY HARDCODED CREDENTIALS - DO NOT USE IN PRODUCTION
-const TEMP_CREDENTIALS = {
-  username: 'admin',
-  password: 'password123', // ⚠️ Never hardcode passwords in real applications!
-};
+import { supabase } from './supabase/client';
+import type { User } from '@supabase/supabase-js';
 
-const AUTH_STORAGE_KEY = 'portfolio_auth_temp'; // ⚠️ localStorage is not secure
+/**
+ * Sign in with email and password
+ */
+export async function signInWithEmail(email: string, password: string) {
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
 
-export function attemptLogin(username: string, password: string): boolean {
-  // ⚠️ This is completely insecure - credentials are checked client-side
-  if (username === TEMP_CREDENTIALS.username && password === TEMP_CREDENTIALS.password) {
-    // ⚠️ Storing auth state in localStorage can be manipulated by user
-    localStorage.setItem(AUTH_STORAGE_KEY, 'true');
-    return true;
+  return { data, error };
+}
+
+/**
+ * Sign up new user with email and password
+ */
+export async function signUpWithEmail(email: string, password: string) {
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+  });
+
+  return { data, error };
+}
+
+/**
+ * Sign out current user
+ */
+export async function signOut() {
+  const { error } = await supabase.auth.signOut();
+  if (error) {
+    console.error('Error signing out:', error);
+    throw error;
   }
+}
+
+/**
+ * Get current user session (client-side)
+ */
+export async function getCurrentUser(): Promise<User | null> {
+  const { data: { user } } = await supabase.auth.getUser();
+  return user;
+}
+
+/**
+ * Get current session (client-side)
+ */
+export async function getSession() {
+  const { data: { session } } = await supabase.auth.getSession();
+  return session;
+}
+
+/**
+ * Check if user is authenticated (client-side)
+ */
+export async function isAuthenticated(): Promise<boolean> {
+  const user = await getCurrentUser();
+  return user !== null;
+}
+
+/**
+ * Subscribe to auth state changes
+ */
+export function onAuthStateChange(callback: (user: User | null) => void) {
+  const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    callback(session?.user || null);
+  });
+
+  return () => {
+    subscription.unsubscribe();
+  };
+}
+
+/**
+ * Request password reset
+ */
+export async function resetPassword(email: string) {
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${window.location.origin}/admin/reset-password`,
+  });
+
+  if (error) {
+    throw error;
+  }
+}
+
+/**
+ * Update user password
+ */
+export async function updatePassword(newPassword: string) {
+  const { error } = await supabase.auth.updateUser({
+    password: newPassword,
+  });
+
+  if (error) {
+    throw error;
+  }
+}
+
+// Legacy functions for backwards compatibility (deprecated)
+export function attemptLogin(): boolean {
+  console.warn('attemptLogin is deprecated. Use signInWithEmail instead.');
   return false;
 }
 
-export function isAuthenticated(): boolean {
-  // ⚠️ This can be easily bypassed by manually setting localStorage
-  if (typeof window === 'undefined') return false;
-  return localStorage.getItem(AUTH_STORAGE_KEY) === 'true';
-}
-
 export function logout(): void {
-  if (typeof window === 'undefined') return;
-  localStorage.removeItem(AUTH_STORAGE_KEY);
+  console.warn('logout is deprecated. Use signOut instead.');
+  signOut();
 }
 
 // Helper to check auth on page load

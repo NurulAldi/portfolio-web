@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { logout } from '@/lib/auth';
+import { signOut, getCurrentUser } from '@/lib/auth';
 import { 
   getAllProjectsAdmin, 
   getProjectByIdAdmin,
@@ -21,41 +21,50 @@ export default function AdminProjectsPage() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [editingProjectId, setEditingProjectId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Load projects
-  const loadProjects = () => {
-    const allProjects = getAllProjectsAdmin();
+  const loadProjects = async () => {
+    setIsLoading(true);
+    const allProjects = await getAllProjectsAdmin();
     setProjects(allProjects);
+    setIsLoading(false);
   };
 
   useEffect(() => {
     loadProjects();
   }, []);
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await signOut();
     router.push('/');
   };
 
-  const handleAddProject = (projectData: Omit<Project, 'id'>) => {
-    createProject(projectData);
-    loadProjects();
+  const handleAddProject = async (projectData: Omit<Project, 'id'>) => {
+    setIsLoading(true);
+    await createProject(projectData);
+    await loadProjects();
     setViewMode('list');
+    setIsLoading(false);
   };
 
-  const handleEditProject = (projectData: Omit<Project, 'id'>) => {
+  const handleEditProject = async (projectData: Omit<Project, 'id'>) => {
     if (editingProjectId) {
-      updateProject(editingProjectId, projectData);
-      loadProjects();
+      setIsLoading(true);
+      await updateProject(editingProjectId, projectData);
+      await loadProjects();
       setViewMode('list');
       setEditingProjectId(null);
+      setIsLoading(false);
     }
   };
 
-  const handleDeleteProject = (id: string) => {
+  const handleDeleteProject = async (id: string) => {
     if (confirm('Are you sure you want to delete this project? This action cannot be undone.')) {
-      deleteProject(id);
-      loadProjects();
+      setIsLoading(true);
+      await deleteProject(id);
+      await loadProjects();
+      setIsLoading(false);
     }
   };
 

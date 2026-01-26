@@ -1,15 +1,25 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { logout } from '@/lib/auth';
+import { signOut, getCurrentUser } from '@/lib/auth';
 import Link from 'next/link';
+import type { User } from '@supabase/supabase-js';
 
 export default function AdminDashboardPage() {
   const router = useRouter();
+  const [user, setUser] = useState<User | null>(null);
 
-  const handleLogout = () => {
-    logout();
+  useEffect(() => {
+    const fetchUser = async () => {
+      const currentUser = await getCurrentUser();
+      setUser(currentUser);
+    };
+    fetchUser();
+  }, []);
+
+  const handleLogout = async () => {
+    await signOut();
     router.push('/');
   };
 
@@ -19,7 +29,9 @@ export default function AdminDashboardPage() {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-4xl font-bold text-slate-900 mb-2">Admin Dashboard</h1>
-          <p className="text-slate-600">Manage your portfolio projects</p>
+          <p className="text-slate-600">
+            Welcome, {user?.email || 'Loading...'}
+          </p>
         </div>
         <button
           onClick={handleLogout}
@@ -30,22 +42,6 @@ export default function AdminDashboardPage() {
           </svg>
           Logout
         </button>
-      </div>
-
-      {/* Development Notice */}
-      <div className="mb-8 p-6 bg-yellow-50 border-2 border-yellow-200 rounded-lg">
-        <div className="flex gap-4">
-          <svg className="w-6 h-6 text-yellow-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-          </svg>
-          <div>
-            <h3 className="font-semibold text-yellow-900 mb-2">Development Mode</h3>
-            <p className="text-sm text-yellow-800">
-              This admin panel uses temporary client-side authentication and localStorage for data. 
-              Not suitable for production without implementing server-side auth and database integration.
-            </p>
-          </div>
-        </div>
       </div>
 
       {/* Quick Stats */}

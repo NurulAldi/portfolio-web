@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import type { ContentBlock } from '@/lib/projects';
+import ImageUploader from './ImageUploader';
 
 interface BlockEditorProps {
   blocks: ContentBlock[];
@@ -10,10 +11,13 @@ interface BlockEditorProps {
 
 type BlockType = 'paragraph' | 'heading' | 'quote' | 'image' | 'list';
 
-export default function BlockEditor({ blocks, onChange }: BlockEditorProps) {
+export default function BlockEditor({ blocks = [], onChange }: BlockEditorProps) {
   const [selectedType, setSelectedType] = useState<BlockType>('paragraph');
   const [editingContent, setEditingContent] = useState('');
   const [listItems, setListItems] = useState<string[]>(['']);
+
+  // Ensure blocks is always an array
+  const safeBlocks = Array.isArray(blocks) ? blocks : [];
 
   const blockTypes = [
     { type: 'paragraph' as BlockType, label: 'Paragraf Teks', icon: '📝' },
@@ -35,17 +39,17 @@ export default function BlockEditor({ blocks, onChange }: BlockEditorProps) {
         : editingContent,
     };
 
-    onChange([...blocks, newBlock]);
+    onChange([...safeBlocks, newBlock]);
     setEditingContent('');
     setListItems(['']);
   };
 
   const removeBlock = (id: string) => {
-    onChange(blocks.filter(block => block.id !== id));
+    onChange(safeBlocks.filter(block => block.id !== id));
   };
 
   const moveBlock = (index: number, direction: 'up' | 'down') => {
-    const newBlocks = [...blocks];
+    const newBlocks = [...safeBlocks];
     const targetIndex = direction === 'up' ? index - 1 : index + 1;
     if (targetIndex < 0 || targetIndex >= newBlocks.length) return;
     
@@ -136,6 +140,14 @@ export default function BlockEditor({ blocks, onChange }: BlockEditorProps) {
               + Tambah Item
             </button>
           </div>
+        ) : selectedType === 'image' ? (
+          <ImageUploader
+            value={editingContent}
+            onChange={setEditingContent}
+            label=""
+            required={false}
+            bucketType="CONTENT_IMAGES"
+          />
         ) : (
           <textarea
             value={editingContent}
@@ -161,17 +173,17 @@ export default function BlockEditor({ blocks, onChange }: BlockEditorProps) {
       </div>
 
       {/* Blocks List */}
-      {blocks.length > 0 && (
+      {safeBlocks.length > 0 && (
         <div>
           <div className="flex items-center justify-between mb-3">
             <label className="block text-sm font-semibold text-slate-900">
-              Blok Konten ({blocks.length})
+              Blok Konten ({safeBlocks.length})
             </label>
             <span className="text-xs text-slate-500">Seret dan lepas blok untuk mengatur ulang</span>
           </div>
 
           <div className="space-y-3">
-            {blocks.map((block, index) => (
+            {safeBlocks.map((block, index) => (
               <div
                 key={block.id}
                 className="bg-white border-l-4 border-primary rounded-lg p-4 shadow-sm"
@@ -208,7 +220,7 @@ export default function BlockEditor({ blocks, onChange }: BlockEditorProps) {
                     <button
                       type="button"
                       onClick={() => moveBlock(index, 'down')}
-                      disabled={index === blocks.length - 1}
+                      disabled={index === safeBlocks.length - 1}
                       className="p-1 text-slate-400 hover:text-slate-600 disabled:opacity-30 disabled:cursor-not-allowed"
                       title="Pindah ke bawah"
                     >

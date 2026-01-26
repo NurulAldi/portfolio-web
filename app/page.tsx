@@ -5,13 +5,17 @@ import ProjectCard from '@/components/ProjectCard';
 import { FormEvent, useState, useEffect } from 'react';
 
 export default function HomePage() {
-  const [allProjects, setAllProjects] = useState<ReturnType<typeof getAllProjects>>([]);
+  const [allProjects, setAllProjects] = useState<Awaited<ReturnType<typeof getAllProjects>>>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Load projects on client side to avoid hydration mismatch
-    setAllProjects(getAllProjects());
-    setIsLoading(false);
+    // Load projects on client side
+    const fetchProjects = async () => {
+      const projects = await getAllProjects();
+      setAllProjects(projects);
+      setIsLoading(false);
+    };
+    fetchProjects();
   }, []);
 
   const [formState, setFormState] = useState({

@@ -17,108 +17,162 @@ export interface Project {
   githubUrl?: string;
 }
 
-// Storage key for localStorage override
-const STORAGE_KEY = 'portfolio_projects_override';
-
 /*
- * NOTE: This implementation uses localStorage for temporary storage.
- * In production, replace with proper database operations via API routes.
+ * This implementation now uses Supabase for storage via API routes.
+ * All CRUD operations go through Next.js API routes for server-side execution.
  */
 
-// Load projects from localStorage or fall back to JSON file
-function loadProjects(): Project[] {
-  if (typeof window === 'undefined') {
-    return projectsData;
-  }
-  
-  const stored = localStorage.getItem(STORAGE_KEY);
-  if (stored) {
-    try {
-      return JSON.parse(stored);
-    } catch {
-      return projectsData;
-    }
-  }
-  return projectsData;
-}
-
-// Save projects to localStorage
-function saveProjects(projects: Project[]): void {
-  if (typeof window === 'undefined') return;
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(projects));
-}
+// Cache for projects (client-side only)
+let projectsCache: Project[] | null = null;
 
 // PUBLIC METHODS (for frontend display)
 
-export function getAllProjects(): Project[] {
-  return loadProjects();
+export async function getAllProjects(): Promise<Project[]> {
+  try {
+    // Use cache if available
+    if (projectsCache) {
+      return projectsCache;
+    }
+
+    const response = await fetch('/api/projects', {
+      cache: 'no-store',
+    });
+
+    if (!response.ok) {
+      console.error('Failed to fetch projects');
+      return projectsData as Project[];
+    }
+
+    const projects = await response.json();
+    projectsCache = projects;
+    return projects;
+  } catch (error) {
+    console.error('Error fetching projects:', error);
+    return projectsData as Project[];
+  }
 }
 
-export function getProjectBySlug(slug: string): Project | undefined {
-  return loadProjects().find(project => project.slug === slug);
+export async function getProjectBySlug(slug: string): Promise<Project | undefined> {
+  try {
+    const projects = await getAllProjects();
+    return projects.find(project => project.slug === slug);
+  } catch (error) {
+    console.error('Error fetching project by slug:', error);
+    return undefined;
+  }
 }
 
-export function getAllProjectSlugs(): string[] {
-  return loadProjects()
-    .map(project => project.slug);
+export async function getAllProjectSlugs(): Promise<string[]> {
+  try {
+    const projects = await getAllProjects();
+    return projects.map(project => project.slug);
+  } catch (error) {
+    console.error('Error fetching project slugs:', error);
+    return [];
+  }
 }
 
 // ADMIN METHODS (for management - require authentication in components)
 
-export function getAllProjectsAdmin(): Project[] {
-  // Returns ALL projects including unpublished for admin view
-  return loadProjects();
+export async function getAllProjectsAdmin(): Promise<Project[]> {
+  // Clear cache to ensure fresh data
+  projectsCache = null;
+  return getAllProjects();
 }
 
-export function getProjectByIdAdmin(id: string): Project | undefined {
-  return loadProjects().find(project => project.id === id);
-}
+export async function getProjectByIdAdmin(id: string): Promise<Project | undefined> {
+  try {
+    const response = await fetch(`/api/projects/${id}`, {
+      cache: 'no-store',
+    });
 
-export function createProject(projectData: Omit<Project, 'id'>): Project {
-  const projects = loadProjects();
-  
-  // Generate new ID
-  const maxId = projects.reduce((max, p) => {
-    const numId = parseInt(p.id);
-    return numId > max ? numId : max;
-  }, 0);
-  
-  const newProject: Project = {
-    ...projectData,
-    id: String(maxId + 1),
-  };
-  
-  projects.push(newProject);
-  saveProjects(projects);
-  
-  return newProject;
-}
+    if (!response.ok) {
+      console.error('Failed to fetch project');
+      return undefined;
+    }
 
-export function updateProject(id: string, updates: Partial<Project>): Project | null {
-  const projects = loadProjects();
-  const index = projects.findIndex(p => p.id === id);
-  
-  if (index === -1) return null;
-  
-  // Prevent ID changes
-  delete (updates as any).id;
-  
-  projects[index] = { ...projects[index], ...updates };
-  saveProjects(projects);
-  
-  return projects[index];
-}
-
-export function deleteProject(id: string): boolean {
-  const projects = loadProjects();
-  const filtered = projects.filter(p => p.id !== id);
-  
-  if (filtered.length === projects.length) {
-    return false; // Project not found
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching project by ID:', error);
+    return undefined;
   }
-  
-  saveProjects(filtered);
-  return true;
+}
+
+export async function createProject(projectData: Omit<Project, 'id'>): Promise<Project | null> {
+  try {
+    const response = await fetch('/api/projects', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(projectData),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      console.error('Failed to create project:', error);
+      return null;
+    }
+
+    const newProject = await response.json();
+    
+    // Clear cache
+    projectsCache = null;
+    
+    return newProject;
+  } catch (error) {
+    console.error('Error creating project:', error);
+    return null;
+  }
+}
+
+export async function updateProject(id: string, updates: Partial<Project>): Promise<Project | null> {
+  try {
+    const response = await fetch(`/api/projects/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(updates),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      console.error('Failed to update project:', error);
+      return null;
+    }
+
+    const updatedProject = await response.json();
+    
+    // Clear cache
+    projectsCache = null;
+    
+    return updatedProject;
+  } catch (error) {
+    console.error('Error updating project:', error);
+    return null;
+  }
+}
+
+export async function deleteProject(id: string): Promise<boolean> {
+  try {
+    const response = await fetch(`/api/projects/${id}`, {
+      method: 'DELETE',
+    });
+
+    if (!response.ok) {
+      console.error('Failed to delete project');
+      return false;
+    }
+
+    // Clear cache
+    projectsCache = null;
+    
+    return true;
+  } catch (error) {
+    console.error('Error deleting project:', error);
+    return false;
+  }
 }
 
 // Utility to generate slug from title

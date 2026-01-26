@@ -4,6 +4,7 @@ import { FormEvent, useState } from 'react';
 import type { Project, ContentBlock } from '@/lib/projects';
 import { generateSlug } from '@/lib/projects';
 import BlockEditor from './BlockEditor';
+import ImageUploader from './ImageUploader';
 
 interface ProjectFormProps {
   project?: Project; // If provided, form is in edit mode
@@ -15,7 +16,7 @@ export default function ProjectForm({ project, onSubmit, onCancel }: ProjectForm
   const [formData, setFormData] = useState({
     title: project?.title || '',
     summary: project?.summary || '',
-    image: project?.image || '/placeholder-project.jpg',
+    image: project?.image || '',
     githubUrl: project?.githubUrl || '',
   });
   
@@ -23,7 +24,7 @@ export default function ProjectForm({ project, onSubmit, onCancel }: ProjectForm
   const [tagInput, setTagInput] = useState('');
   
   const [descriptionBlocks, setDescriptionBlocks] = useState<ContentBlock[]>(
-    project?.description || []
+    Array.isArray(project?.description) ? project.description : []
   );
 
   // Auto-generate slug from title (always enabled)
@@ -105,19 +106,13 @@ export default function ProjectForm({ project, onSubmit, onCancel }: ProjectForm
 
         {/* Thumbnail Image */}
         <div>
-          <label htmlFor="image" className="block text-sm font-semibold text-slate-900 mb-2">
-            Thumbnail Image *
-          </label>
-          <input
-            type="url"
-            id="image"
-            required
+          <ImageUploader
             value={formData.image}
-            onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-            className="input-field"
-            placeholder="https://example.com/image.jpg or /project-image.jpg"
+            onChange={(url) => setFormData({ ...formData, image: url })}
+            label="Thumbnail Image"
+            required
+            bucketType="PROJECT_IMAGES"
           />
-          <p className="text-xs text-slate-500 mt-1">Enter a URL to an image or path to local image in public folder</p>
         </div>
 
         {/* Block Editor for Description */}
