@@ -24,20 +24,51 @@ export default function HomePage() {
     message: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<{
+    type: 'success' | 'error' | null;
+    message: string;
+  }>({ type: null, message: '' });
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setSubmitStatus({ type: null, message: '' });
     
-    // Simulate form submission
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    const formData = new FormData(e.currentTarget);
     
-    // Reset form
-    setFormState({ name: '', email: '', message: '' });
-    setIsSubmitting(false);
+    // Add Web3Forms access key
+    formData.append('access_key', process.env.NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY || '');
     
-    // TODO: Implement actual form submission logic
-    alert('Thank you for your message! (Form submission not yet implemented)');
+    try {
+      // Submit directly to Web3Forms (client-side)
+      const response = await fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setSubmitStatus({
+          type: 'success',
+          message: 'Thank you for your message! I will get back to you soon.',
+        });
+        setFormState({ name: '', email: '', message: '' });
+      } else {
+        setSubmitStatus({
+          type: 'error',
+          message: result.message || 'Failed to send message. Please try again.',
+        });
+      }
+    } catch (error) {
+      console.error('Contact form error:', error);
+      setSubmitStatus({
+        type: 'error',
+        message: 'An error occurred. Please try again later.',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -155,6 +186,7 @@ export default function HomePage() {
                   <input
                     type="text"
                     id="name"
+                    name="name"
                     required
                     value={formState.name}
                     onChange={(e) => setFormState({ ...formState, name: e.target.value })}
@@ -174,6 +206,7 @@ export default function HomePage() {
                   <input
                     type="email"
                     id="email"
+                    name="email"
                     required
                     value={formState.email}
                     onChange={(e) => setFormState({ ...formState, email: e.target.value })}
@@ -192,6 +225,7 @@ export default function HomePage() {
                   </label>
                   <textarea
                     id="message"
+                    name="message"
                     required
                     value={formState.message}
                     onChange={(e) => setFormState({ ...formState, message: e.target.value })}
@@ -200,6 +234,37 @@ export default function HomePage() {
                     placeholder="Tell me about your data challenge or project..."
                   />
                 </div>
+
+                {/* Status Message */}
+                {submitStatus.type && (
+                  <div className={`p-4 rounded-lg border-2 ${
+                    submitStatus.type === 'success' 
+                      ? 'bg-green-50 border-green-200' 
+                      : 'bg-red-50 border-red-200'
+                  }`}>
+                    <div className="flex gap-3">
+                      <svg 
+                        className={`w-5 h-5 flex-shrink-0 mt-0.5 ${
+                          submitStatus.type === 'success' ? 'text-green-600' : 'text-red-600'
+                        }`}
+                        fill="none" 
+                        stroke="currentColor" 
+                        viewBox="0 0 24 24"
+                      >
+                        {submitStatus.type === 'success' ? (
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        ) : (
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        )}
+                      </svg>
+                      <p className={`text-sm font-medium ${
+                        submitStatus.type === 'success' ? 'text-green-800' : 'text-red-800'
+                      }`}>
+                        {submitStatus.message}
+                      </p>
+                    </div>
+                  </div>
+                )}
 
                 {/* Submit Button */}
                 <button
@@ -241,34 +306,18 @@ export default function HomePage() {
                 </div>
               </div>
 
-              {/* Social Links */}
+              {/* Based In */}
               <div className="card card-hover p-5 md:p-6">
                 <div className="flex items-start gap-4">
                   <div className="bg-primary/10 p-3 rounded-lg">
                     <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
                   </div>
                   <div>
-                    <h3 className="font-semibold text-slate-900 mb-2">Social</h3>
-                    <div className="space-y-2">
-                      <a 
-                        href="https://github.com/NurulAldi" 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="block text-slate-600 hover:text-primary transition-colors"
-                      >
-                        GitHub →
-                      </a>
-                      <a 
-                        href="https://www.linkedin.com/in/nurul-aldi-60b072265" 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="block text-slate-600 hover:text-primary transition-colors"
-                      >
-                        LinkedIn →
-                      </a>
-                    </div>
+                    <h3 className="font-semibold text-slate-900 mb-1">Based In</h3>
+                    <p className="text-slate-600">Padang, Indonesia</p>
                   </div>
                 </div>
               </div>
