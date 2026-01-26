@@ -34,21 +34,19 @@ export default function HomePage() {
     setIsSubmitting(true);
     setSubmitStatus({ type: null, message: '' });
     
-    const formData = new FormData(e.currentTarget);
-    
-    // Add Web3Forms access key
-    formData.append('access_key', process.env.NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY || '');
-    
     try {
-      // Submit directly to Web3Forms (client-side)
-      const response = await fetch('https://api.web3forms.com/submit', {
+      // Submit to our API route (server-side)
+      const response = await fetch('/api/contact', {
         method: 'POST',
-        body: formData,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formState),
       });
 
       const result = await response.json();
 
-      if (result.success) {
+      if (response.ok) {
         setSubmitStatus({
           type: 'success',
           message: 'Thank you for your message! I will get back to you soon.',
@@ -57,7 +55,7 @@ export default function HomePage() {
       } else {
         setSubmitStatus({
           type: 'error',
-          message: result.message || 'Failed to send message. Please try again.',
+          message: result.error || 'Failed to send message. Please try again.',
         });
       }
     } catch (error) {

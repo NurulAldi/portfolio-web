@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/auth-server';
+import { rateLimiter, getClientIp } from '@/lib/rate-limit';
 import type { ContentBlock } from '@/lib/projects';
 
 // GET /api/projects/[id] - Get a single project (public endpoint)
@@ -70,6 +71,23 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Rate limiting: 20 requests per hour per IP for updates
+    const clientIp = getClientIp(request);
+    const rateLimit = rateLimiter.check(`projects-update-${clientIp}`, 20, 60 * 60 * 1000);
+
+    if (!rateLimit.success) {
+      const retryAfter = Math.ceil((rateLimit.resetTime - Date.now()) / 1000);
+      return NextResponse.json(
+        { error: 'Too many requests. Please try again later.' },
+        { 
+          status: 429,
+          headers: {
+            'Retry-After': retryAfter.toString(),
+          }
+        }
+      );
+    }
+
     // Check authentication
     const { requireAuth } = await import('@/lib/auth-server');
     try {
@@ -173,6 +191,23 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Rate limiting: 10 requests per hour per IP for deletion
+    const clientIp = getClientIp(request);
+    const rateLimit = rateLimiter.check(`projects-delete-${clientIp}`, 10, 60 * 60 * 1000);
+
+    if (!rateLimit.success) {
+      const retryAfter = Math.ceil((rateLimit.resetTime - Date.now()) / 1000);
+      return NextResponse.json(
+        { error: 'Too many requests. Please try again later.' },
+        { 
+          status: 429,
+          headers: {
+            'Retry-After': retryAfter.toString(),
+          }
+        }
+      );
+    }
+
     // Check authentication
     const { requireAuth } = await import('@/lib/auth-server');
     try {

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/auth-server';
+import { rateLimiter, getClientIp } from '@/lib/rate-limit';
 import type { ContentBlock } from '@/lib/projects';
 
 // GET /api/projects - Get all projects (public endpoint)
@@ -72,6 +73,23 @@ export async function GET() {
 // POST /api/projects - Create a new project (requires authentication)
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting: 10 requests per hour per IP for creation
+    const clientIp = getClientIp(request);
+    const rateLimit = rateLimiter.check(`projects-create-${clientIp}`, 10, 60 * 60 * 1000);
+
+    if (!rateLimit.success) {
+      const retryAfter = Math.ceil((rateLimit.resetTime - Date.now()) / 1000);
+      return NextResponse.json(
+        { error: 'Too many requests. Please try again later.' },
+        { 
+          status: 429,
+          headers: {
+            'Retry-After': retryAfter.toString(),
+          }
+        }
+      );
+    }
+
     // Check authentication
     const { requireAuth } = await import('@/lib/auth-server');
     try {

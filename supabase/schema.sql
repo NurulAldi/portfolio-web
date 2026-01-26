@@ -61,25 +61,25 @@ CREATE POLICY "Enable read access for all users" ON projects
 CREATE POLICY "Enable read access for all users" ON content_blocks
   FOR SELECT USING (true);
 
--- Create policies for authenticated write access (admin only)
--- For now, we'll allow all authenticated users. Later, you can add role-based checks.
-CREATE POLICY "Enable insert for authenticated users only" ON projects
-  FOR INSERT WITH CHECK (auth.role() = 'authenticated');
+-- Create policies for authenticated write access (ADMIN ONLY)
+-- Only user with email 'aldiscreamo@email.com' can perform CRUD operations
+CREATE POLICY "Enable insert for admin only" ON projects
+  FOR INSERT WITH CHECK (auth.email() = 'aldiscreamo@email.com');
 
-CREATE POLICY "Enable update for authenticated users only" ON projects
-  FOR UPDATE USING (auth.role() = 'authenticated');
+CREATE POLICY "Enable update for admin only" ON projects
+  FOR UPDATE USING (auth.email() = 'aldiscreamo@email.com');
 
-CREATE POLICY "Enable delete for authenticated users only" ON projects
-  FOR DELETE USING (auth.role() = 'authenticated');
+CREATE POLICY "Enable delete for admin only" ON projects
+  FOR DELETE USING (auth.email() = 'aldiscreamo@email.com');
 
-CREATE POLICY "Enable insert for authenticated users only" ON content_blocks
-  FOR INSERT WITH CHECK (auth.role() = 'authenticated');
+CREATE POLICY "Enable insert for admin only" ON content_blocks
+  FOR INSERT WITH CHECK (auth.email() = 'aldiscreamo@email.com');
 
-CREATE POLICY "Enable update for authenticated users only" ON content_blocks
-  FOR UPDATE USING (auth.role() = 'authenticated');
+CREATE POLICY "Enable update for admin only" ON content_blocks
+  FOR UPDATE USING (auth.email() = 'aldiscreamo@email.com');
 
-CREATE POLICY "Enable delete for authenticated users only" ON content_blocks
-  FOR DELETE USING (auth.role() = 'authenticated');
+CREATE POLICY "Enable delete for admin only" ON content_blocks
+  FOR DELETE USING (auth.email() = 'aldiscreamo@email.com');
 
 -- Function to automatically update updated_at timestamp
 CREATE OR REPLACE FUNCTION update_updated_at_column()

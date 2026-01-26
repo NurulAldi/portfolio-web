@@ -1,7 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { rateLimiter, getClientIp } from '@/lib/rate-limit';
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting: 3 requests per 5 minutes per IP
+    const clientIp = getClientIp(request);
+    const rateLimit = rateLimiter.check(clientIp, 3, 5 * 60 * 1000);
+
+    if (!rateLimit.success) {
+      const retryAfter = Math.ceil((rateLimit.resetTime - Date.now()) / 1000);
+      return NextResponse.json(
+        { error: 'Too many requests. Please try again later.' },
+        { 
+          status: 429,
+          headers: {
+            'Retry-After': retryAfter.toString(),
+            'X-RateLimit-Remaining': '0',
+          }
+        }
+      );
+    }
+
     const body = await request.json();
     const { name, email, message } = body;
 
@@ -23,18 +42,20 @@ export async function POST(request: NextRequest) {
     }
 
     // Use Web3Forms API for sending email
+    // Use FormData format to bypass Cloudflare protection
+    const formData = new FormData();
+    formData.append('access_key', process.env.WEB3FORMS_ACCESS_KEY || '');
+    formData.append('name', name);
+    formData.append('email', email);
+    formData.append('message', message);
+
     const web3FormsResponse = await fetch('https://api.web3forms.com/submit', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
         'Accept': 'application/json',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
       },
-      body: JSON.stringify({
-        access_key: process.env.WEB3FORMS_ACCESS_KEY || '',
-        name: name,
-        email: email,
-        message: message,
-      }),
+      body: formData,
     });
 
     // Check if response is JSON

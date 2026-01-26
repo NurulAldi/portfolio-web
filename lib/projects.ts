@@ -40,7 +40,7 @@ export async function getAllProjects(): Promise<Project[]> {
 
     if (!response.ok) {
       console.error('Failed to fetch projects');
-      return projectsData as Project[];
+      return [];
     }
 
     const projects = await response.json();
@@ -48,7 +48,7 @@ export async function getAllProjects(): Promise<Project[]> {
     return projects;
   } catch (error) {
     console.error('Error fetching projects:', error);
-    return projectsData as Project[];
+    return [];
   }
 }
 
