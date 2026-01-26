@@ -93,7 +93,7 @@ export default function HomePage() {
 
             {/* Description */}
             <p className="text-base md:text-lg lg:text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed">
-              Data scientist specializing in machine learning and statistical analysis. 
+              Data analyst with expertise in machine learning and statistical analysis. 
               I uncover patterns, build predictive models, and create data-driven solutions 
               that drive business impact.
             </p>
@@ -126,7 +126,7 @@ export default function HomePage() {
               My Projects
             </h2>
             <p className="text-base md:text-lg lg:text-xl text-slate-600">
-              A collection of data science projects leveraging machine learning and analytics. 
+              A collection of data analytics projects leveraging machine learning and analytics. 
               Each project demonstrates different techniques for extracting insights and solving complex problems with data.
             </p>
           </div>
