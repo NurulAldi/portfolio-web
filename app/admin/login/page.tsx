@@ -138,26 +138,6 @@ export default function AdminLoginPage() {
               )}
             </button>
           </form>
-
-          {/* Info */}
-          <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <div className="flex gap-2">
-              <svg className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <div className="text-sm text-blue-800">
-                <p className="font-semibold mb-1">Access Restricted</p>
-                <p>Only authorized accounts can access the admin panel.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Back to Home */}
-        <div className="text-center mt-6">
-          <a href="/" className="text-sm text-slate-600 hover:text-primary transition-colors">
-            ← Back to Home
-          </a>
         </div>
       </div>
     </div>

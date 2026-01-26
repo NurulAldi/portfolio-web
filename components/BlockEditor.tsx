@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import type { ContentBlock } from '@/lib/projects';
 import ImageUploader from './ImageUploader';
+import Image from 'next/image';
 
 interface BlockEditorProps {
   blocks: ContentBlock[];
@@ -15,16 +16,17 @@ export default function BlockEditor({ blocks = [], onChange }: BlockEditorProps)
   const [selectedType, setSelectedType] = useState<BlockType>('paragraph');
   const [editingContent, setEditingContent] = useState('');
   const [listItems, setListItems] = useState<string[]>(['']);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   // Ensure blocks is always an array
   const safeBlocks = Array.isArray(blocks) ? blocks : [];
 
   const blockTypes = [
-    { type: 'paragraph' as BlockType, label: 'Paragraf Teks', icon: '📝' },
-    { type: 'heading' as BlockType, label: 'Subjudul', icon: 'H' },
-    { type: 'quote' as BlockType, label: 'Kutipan', icon: '""' },
-    { type: 'image' as BlockType, label: 'Gambar Konten', icon: '🖼️' },
-    { type: 'list' as BlockType, label: 'Daftar Item', icon: '☰' },
+    { type: 'paragraph' as BlockType, label: 'Text Paragraph', icon: '📝' },
+    { type: 'heading' as BlockType, label: 'Subheading', icon: 'H' },
+    { type: 'quote' as BlockType, label: 'Quote', icon: '""' },
+    { type: 'image' as BlockType, label: 'Content Image', icon: '🖼️' },
+    { type: 'list' as BlockType, label: 'List Items', icon: '☰' },
   ];
 
   const addBlock = () => {
@@ -77,7 +79,7 @@ export default function BlockEditor({ blocks = [], onChange }: BlockEditorProps)
       {/* Block Type Selector */}
       <div>
         <label className="block text-sm font-semibold text-slate-900 mb-3">
-          Pilih Jenis Blok Konten
+          Select Content Block Type
         </label>
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
           {blockTypes.map((blockType) => (
@@ -96,7 +98,7 @@ export default function BlockEditor({ blocks = [], onChange }: BlockEditorProps)
               }`}
             >
               <div className="text-2xl mb-2">{blockType.icon}</div>
-              <div className="text-sm font-medium text-slate-900">{blockType.label}</div>
+              <div className="text-sm font-medium text-slate-900 truncate">{blockType.label}</div>
             </button>
           ))}
         </div>
@@ -106,7 +108,7 @@ export default function BlockEditor({ blocks = [], onChange }: BlockEditorProps)
       <div>
         <div className="flex items-center justify-between mb-2">
           <label className="block text-sm font-semibold text-slate-900">
-            Jenis yang dipilih: <span className="text-primary">{blockTypes.find(b => b.type === selectedType)?.label}</span>
+            Selected type: <span className="text-primary">{blockTypes.find(b => b.type === selectedType)?.label}</span>
           </label>
         </div>
 
@@ -137,7 +139,7 @@ export default function BlockEditor({ blocks = [], onChange }: BlockEditorProps)
               onClick={addListItem}
               className="text-sm text-primary hover:text-primary/80 transition-colors"
             >
-              + Tambah Item
+              + Add Item
             </button>
           </div>
         ) : selectedType === 'image' ? (
@@ -155,10 +157,10 @@ export default function BlockEditor({ blocks = [], onChange }: BlockEditorProps)
             rows={selectedType === 'paragraph' ? 4 : 2}
             className="input-field resize-none"
             placeholder={
-              selectedType === 'paragraph' ? 'Tulis paragraf teks berita di sini...' :
-              selectedType === 'heading' ? 'Tulis subjudul di sini...' :
-              selectedType === 'quote' ? 'Tulis kutipan di sini...' :
-              'Masukkan URL gambar...'
+              selectedType === 'paragraph' ? 'Write text paragraph here...' :
+              selectedType === 'heading' ? 'Write subheading here...' :
+              selectedType === 'quote' ? 'Write quote here...' :
+              'Enter image URL...'
             }
           />
         )}
@@ -168,7 +170,7 @@ export default function BlockEditor({ blocks = [], onChange }: BlockEditorProps)
           onClick={addBlock}
           className="mt-3 btn-primary"
         >
-          + Tambah Blok
+          + Add Block
         </button>
       </div>
 
@@ -177,9 +179,9 @@ export default function BlockEditor({ blocks = [], onChange }: BlockEditorProps)
         <div>
           <div className="flex items-center justify-between mb-3">
             <label className="block text-sm font-semibold text-slate-900">
-              Blok Konten ({safeBlocks.length})
+              Content Blocks ({safeBlocks.length})
             </label>
-            <span className="text-xs text-slate-500">Seret dan lepas blok untuk mengatur ulang</span>
+            <span className="text-xs text-slate-500">Drag and drop blocks to rearrange</span>
           </div>
 
           <div className="space-y-3">
@@ -197,11 +199,11 @@ export default function BlockEditor({ blocks = [], onChange }: BlockEditorProps)
                       block.type === 'image' ? 'bg-green-100 text-green-800' :
                       'bg-slate-100 text-slate-800'
                     }`}>
-                      {block.type === 'paragraph' ? 'Teks' :
-                       block.type === 'heading' ? 'Subjudul' :
-                       block.type === 'quote' ? 'Kutipan' :
-                       block.type === 'image' ? 'Gambar' :
-                       'Daftar'}
+                      {block.type === 'paragraph' ? 'Text' :
+                       block.type === 'heading' ? 'Subheading' :
+                       block.type === 'quote' ? 'Quote' :
+                       block.type === 'image' ? 'Image' :
+                       'List'}
                     </span>
                   </div>
                   
@@ -211,7 +213,7 @@ export default function BlockEditor({ blocks = [], onChange }: BlockEditorProps)
                       onClick={() => moveBlock(index, 'up')}
                       disabled={index === 0}
                       className="p-1 text-slate-400 hover:text-slate-600 disabled:opacity-30 disabled:cursor-not-allowed"
-                      title="Pindah ke atas"
+                      title="Move up"
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
@@ -222,7 +224,7 @@ export default function BlockEditor({ blocks = [], onChange }: BlockEditorProps)
                       onClick={() => moveBlock(index, 'down')}
                       disabled={index === safeBlocks.length - 1}
                       className="p-1 text-slate-400 hover:text-slate-600 disabled:opacity-30 disabled:cursor-not-allowed"
-                      title="Pindah ke bawah"
+                      title="Move down"
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -232,7 +234,7 @@ export default function BlockEditor({ blocks = [], onChange }: BlockEditorProps)
                       type="button"
                       onClick={() => removeBlock(block.id)}
                       className="p-1 text-red-400 hover:text-red-600 ml-2"
-                      title="Hapus"
+                      title="Remove"
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -245,11 +247,23 @@ export default function BlockEditor({ blocks = [], onChange }: BlockEditorProps)
                   {block.type === 'list' ? (
                     <ul className="list-disc list-inside space-y-1">
                       {(block.content as string[]).map((item, i) => (
-                        <li key={i}>{item}</li>
+                        <li key={i} className="truncate">{item}</li>
                       ))}
                     </ul>
                   ) : block.type === 'image' ? (
-                    <div className="text-slate-500">🖼️ {block.content}</div>
+                    <div 
+                      className="relative w-full h-32 bg-slate-100 rounded-lg overflow-hidden border border-slate-200 cursor-pointer hover:opacity-80 transition-opacity"
+                      onClick={() => setImagePreview(block.content as string)}
+                    >
+                      <Image
+                        src={block.content as string}
+                        alt="Content preview"
+                        fill
+                        className="object-cover"
+                        sizes="300px"
+                        quality={80}
+                      />
+                    </div>
                   ) : (
                     <div className="line-clamp-2">{block.content}</div>
                   )}
@@ -260,6 +274,27 @@ export default function BlockEditor({ blocks = [], onChange }: BlockEditorProps)
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* Image Preview Modal */}
+      {imagePreview && (
+        <div 
+          className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center"
+          onClick={() => setImagePreview(null)}
+        >
+          <div className="relative w-full h-full flex items-center justify-center">
+            <div className="relative w-full h-full max-w-6xl max-h-screen">
+              <Image
+                src={imagePreview}
+                alt="Full size preview"
+                fill
+                className="object-contain"
+                sizes="(max-width: 1536px) 100vw, 1536px"
+                quality={90}
+              />
+            </div>
           </div>
         </div>
       )}

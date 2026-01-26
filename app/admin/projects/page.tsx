@@ -12,16 +12,33 @@ import {
   type Project 
 } from '@/lib/projects';
 import ProjectForm from '@/components/ProjectForm';
+import Toast, { type ToastType } from '@/components/Toast';
 import Link from 'next/link';
 
 type ViewMode = 'list' | 'add' | 'edit';
+
+interface ToastState {
+  show: boolean;
+  message: string;
+  type: ToastType;
+}
 
 export default function AdminProjectsPage() {
   const router = useRouter();
   const [projects, setProjects] = useState<Project[]>([]);
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [editingProjectId, setEditingProjectId] = useState<string | null>(null);
+  const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [toast, setToast] = useState<ToastState>({ show: false, message: '', type: 'success' });
+
+  const showToast = (message: string, type: ToastType) => {
+    setToast({ show: true, message, type });
+  };
+
+  const hideToast = () => {
+    setToast({ show: false, message: '', type: 'success' });
+  };
 
   // Load projects
   const loadProjects = async () => {
@@ -42,19 +59,29 @@ export default function AdminProjectsPage() {
 
   const handleAddProject = async (projectData: Omit<Project, 'id'>) => {
     setIsLoading(true);
-    await createProject(projectData);
-    await loadProjects();
-    setViewMode('list');
+    try {
+      await createProject(projectData);
+      await loadProjects();
+      setViewMode('list');
+      showToast('Project added successfully!', 'success');
+    } catch (error) {
+      showToast('Failed to add project. Please try again.', 'error');
+    }
     setIsLoading(false);
   };
 
   const handleEditProject = async (projectData: Omit<Project, 'id'>) => {
     if (editingProjectId) {
       setIsLoading(true);
-      await updateProject(editingProjectId, projectData);
-      await loadProjects();
-      setViewMode('list');
-      setEditingProjectId(null);
+      try {
+        await updateProject(editingProjectId, projectData);
+        await loadProjects();
+        setViewMode('list');
+        setEditingProjectId(null);
+        showToast('Project updated successfully!', 'success');
+      } catch (error) {
+        showToast('Failed to update project. Please try again.', 'error');
+      }
       setIsLoading(false);
     }
   };
@@ -62,20 +89,30 @@ export default function AdminProjectsPage() {
   const handleDeleteProject = async (id: string) => {
     if (confirm('Are you sure you want to delete this project? This action cannot be undone.')) {
       setIsLoading(true);
-      await deleteProject(id);
-      await loadProjects();
+      try {
+        await deleteProject(id);
+        await loadProjects();
+        showToast('Project deleted successfully!', 'success');
+      } catch (error) {
+        showToast('Failed to delete project. Please try again.', 'error');
+      }
       setIsLoading(false);
     }
   };
 
-  const startEdit = (id: string) => {
+  const startEdit = async (id: string) => {
     setEditingProjectId(id);
+    setIsLoading(true);
+    const project = await getProjectByIdAdmin(id);
+    setEditingProject(project || null);
+    setIsLoading(false);
     setViewMode('edit');
   };
 
   const cancelEdit = () => {
     setViewMode('list');
     setEditingProjectId(null);
+    setEditingProject(null);
   };
 
   return (
@@ -93,22 +130,6 @@ export default function AdminProjectsPage() {
           <button onClick={handleLogout} className="btn-secondary">
             Logout
           </button>
-        </div>
-      </div>
-
-      {/* Info Banner */}
-      <div className="mb-8 p-4 bg-blue-50 border-2 border-blue-200 rounded-lg">
-        <div className="flex gap-3">
-          <svg className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          <div>
-            <p className="text-sm text-blue-800">
-              <strong>Note:</strong> Projects are currently stored in localStorage. 
-              Changes will persist in your browser but won't sync across devices. 
-              Clearing browser data will reset to default projects.
-            </p>
-          </div>
         </div>
       </div>
 
@@ -210,11 +231,20 @@ export default function AdminProjectsPage() {
         />
       )}
 
-      {viewMode === 'edit' && editingProjectId && (
+      {viewMode === 'edit' && editingProjectId && editingProject && (
         <ProjectForm
-          project={getProjectByIdAdmin(editingProjectId)}
+          project={editingProject}
           onSubmit={handleEditProject}
           onCancel={cancelEdit}
+        />
+      )}
+
+      {/* Toast Notification */}
+      {toast.show && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={hideToast}
         />
       )}
     </div>

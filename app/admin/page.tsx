@@ -29,9 +29,6 @@ export default function AdminDashboardPage() {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-4xl font-bold text-slate-900 mb-2">Admin Dashboard</h1>
-          <p className="text-slate-600">
-            Welcome, {user?.email || 'Loading...'}
-          </p>
         </div>
         <button
           onClick={handleLogout}

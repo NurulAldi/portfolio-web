@@ -20,7 +20,8 @@ export default function ProjectCard({ project }: ProjectCardProps) {
             alt={project.title}
             fill
             className="object-cover group-hover:scale-105 transition-transform duration-200"
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 400px"
+            quality={80}
           />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center text-slate-400 group-hover:text-primary transition-colors">
@@ -43,10 +44,10 @@ export default function ProjectCard({ project }: ProjectCardProps) {
 
       {/* Project Content */}
       <div className="p-5 md:p-6">
-        <h3 className="text-lg md:text-xl font-bold text-slate-900 mb-2 group-hover:text-primary transition-colors">
+        <h3 className="text-lg md:text-xl font-bold text-slate-900 mb-2 group-hover:text-primary transition-colors break-words">
           {project.title}
         </h3>
-        <p className="text-sm md:text-base text-slate-600 mb-4 line-clamp-2">
+        <p className="text-sm md:text-base text-slate-600 mb-4 line-clamp-2 break-words">
           {project.summary}
         </p>
 
@@ -55,7 +56,7 @@ export default function ProjectCard({ project }: ProjectCardProps) {
           {project.tags && Array.isArray(project.tags) && project.tags.slice(0, 3).map((tag) => (
             <span
               key={tag}
-              className="text-xs font-medium text-slate-600 bg-slate-100 px-3 py-1 rounded-full group-hover:bg-primary/10 group-hover:text-primary transition-all"
+              className="text-xs font-medium text-slate-600 bg-slate-100 px-3 py-1 rounded-full group-hover:bg-primary/10 group-hover:text-primary transition-all break-words"
             >
               {tag}
             </span>

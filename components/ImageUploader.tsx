@@ -16,7 +16,7 @@ interface ImageUploaderProps {
 export default function ImageUploader({
   value,
   onChange,
-  label = 'Upload Gambar',
+  label = 'Upload Image',
   required = false,
   maxSizeMB = 5,
   acceptedFormats = ['image/jpeg', 'image/png', 'image/gif'],
@@ -26,6 +26,7 @@ export default function ImageUploader({
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [preview, setPreview] = useState<string>(value);
+  const [showPreview, setShowPreview] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const formatBytes = (bytes: number): string => {
@@ -39,13 +40,13 @@ export default function ImageUploader({
   const validateFile = (file: File): string | null => {
     // Check file type
     if (!acceptedFormats.includes(file.type)) {
-      return `Format tidak didukung. Gunakan: ${acceptedFormats.map(f => f.split('/')[1].toUpperCase()).join(', ')}`;
+      return `Unsupported format. Use: ${acceptedFormats.map(f => f.split('/')[1].toUpperCase()).join(', ')}`;
     }
 
     // Check file size
     const maxBytes = maxSizeMB * 1024 * 1024;
     if (file.size > maxBytes) {
-      return `Ukuran file terlalu besar. Maksimal ${maxSizeMB}MB (File Anda: ${formatBytes(file.size)})`;
+      return `File size too large. Maximum ${maxSizeMB}MB (Your file: ${formatBytes(file.size)})`;
     }
 
     return null;
@@ -79,7 +80,7 @@ export default function ImageUploader({
       onChange(result.url);
       setIsUploading(false);
     } catch (err) {
-      setError('Gagal mengupload gambar');
+      setError('Failed to upload image');
       setIsUploading(false);
     }
   };
@@ -166,7 +167,7 @@ export default function ImageUploader({
             {isUploading ? (
               <>
                 <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-                <p className="text-sm text-slate-600">Mengupload gambar...</p>
+                <p className="text-sm text-slate-600">Uploading image...</p>
               </>
             ) : (
               <>
@@ -187,7 +188,7 @@ export default function ImageUploader({
                 </div>
                 <div>
                   <p className="text-sm font-medium text-slate-900">
-                    Klik untuk memilih gambar atau drag & drop
+                    Click to select image or drag & drop
                   </p>
                   <p className="text-xs text-slate-500 mt-1">
                     Format: {acceptedFormats.map(f => f.split('/')[1].toUpperCase()).join(', ')} (Max: {maxSizeMB}MB)
@@ -200,34 +201,37 @@ export default function ImageUploader({
       ) : (
         <div className="relative border-2 border-slate-200 rounded-lg p-4 bg-slate-50">
           <div className="flex items-start gap-4">
-            <div className="relative w-32 h-32 flex-shrink-0 bg-white rounded-lg overflow-hidden border border-slate-200">
+            <div 
+              className="relative w-32 h-32 flex-shrink-0 bg-white rounded-lg overflow-hidden border border-slate-200 cursor-pointer hover:opacity-80 transition-opacity"
+              onClick={() => setShowPreview(true)}
+              title="Click to view full size"
+            >
               <Image
                 src={preview}
                 alt="Preview"
                 fill
                 className="object-cover"
+                sizes="128px"
+                quality={90}
                 unoptimized
               />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-slate-900 mb-1">Gambar berhasil diupload</p>
-              <p className="text-xs text-slate-500 truncate">
-                {preview.startsWith('data:') ? 'Base64 Image' : preview}
-              </p>
-              <div className="flex gap-2 mt-3">
+              <p className="text-sm font-medium text-slate-900 mb-3">Image uploaded successfully</p>
+              <div className="flex gap-2">
                 <button
                   type="button"
                   onClick={handleClick}
                   className="text-xs px-3 py-1.5 bg-white border border-slate-300 text-slate-700 rounded hover:bg-slate-50 transition-colors"
                 >
-                  Ganti Gambar
+                  Change Image
                 </button>
                 <button
                   type="button"
                   onClick={handleRemove}
                   className="text-xs px-3 py-1.5 bg-white border border-red-300 text-red-600 rounded hover:bg-red-50 transition-colors"
                 >
-                  Hapus
+                  Remove
                 </button>
               </div>
             </div>
@@ -258,6 +262,28 @@ export default function ImageUploader({
             />
           </svg>
           <p className="text-sm text-red-800">{error}</p>
+        </div>
+      )}
+
+      {/* Image Preview Modal */}
+      {showPreview && preview && (
+        <div 
+          className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center"
+          onClick={() => setShowPreview(false)}
+        >
+          <div className="relative w-full h-full flex items-center justify-center">
+            <div className="relative w-full h-full max-w-6xl max-h-screen">
+              <Image
+                src={preview}
+                alt="Full size preview"
+                fill
+                className="object-contain"
+                sizes="(max-width: 1536px) 100vw, 1536px"
+                quality={90}
+                unoptimized
+              />
+            </div>
+          </div>
         </div>
       )}
     </div>

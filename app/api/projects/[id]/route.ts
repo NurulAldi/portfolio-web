@@ -5,11 +5,11 @@ import type { ContentBlock } from '@/lib/projects';
 // GET /api/projects/[id] - Get a single project (public endpoint)
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const supabase = await createServerSupabaseClient();
-    const { id } = params;
+    const { id } = await params;
 
     // Fetch project
     const { data: project, error: projectError } = await supabase
@@ -67,7 +67,7 @@ export async function GET(
 // PUT /api/projects/[id] - Update a project (requires authentication)
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Check authentication
@@ -82,7 +82,7 @@ export async function PUT(
     }
 
     const supabase = await createServerSupabaseClient();
-    const { id } = params;
+    const { id } = await params;
     const body = await request.json();
     const { slug, title, summary, description, tags, image, githubUrl } = body;
 
@@ -170,7 +170,7 @@ export async function PUT(
 // DELETE /api/projects/[id] - Delete a project (requires authentication)
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Check authentication
@@ -185,7 +185,7 @@ export async function DELETE(
     }
 
     const supabase = await createServerSupabaseClient();
-    const { id } = params;
+    const { id } = await params;
 
     // Delete project (content_blocks will be deleted automatically due to CASCADE)
     const { error: deleteError } = await supabase

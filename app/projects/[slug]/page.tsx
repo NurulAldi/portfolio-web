@@ -68,12 +68,12 @@ export default function ProjectPage({ params }: ProjectPageProps) {
       {/* Project Header */}
       <div className="max-w-4xl">
         <div className="mb-6">
-          <h1 className="text-4xl md:text-5xl font-bold text-slate-900 mb-4">
+          <h1 className="text-4xl md:text-5xl font-bold text-slate-900 mb-4 break-words">
             {project.title}
           </h1>
         </div>
 
-        <p className="text-xl text-slate-600 mb-8">
+        <p className="text-xl text-slate-600 mb-8 break-words">
           {project.summary}
         </p>
 
@@ -82,7 +82,7 @@ export default function ProjectPage({ params }: ProjectPageProps) {
           {project.tags && Array.isArray(project.tags) && project.tags.map((tag) => (
             <span
               key={tag}
-              className="text-sm font-medium text-slate-700 bg-slate-100 px-4 py-2 rounded-full border border-slate-200"
+              className="text-sm font-medium text-slate-700 bg-slate-100 px-4 py-2 rounded-full border border-slate-200 break-words"
             >
               {tag}
             </span>
@@ -116,7 +116,8 @@ export default function ProjectPage({ params }: ProjectPageProps) {
               alt={project.title}
               fill
               className="object-cover"
-              sizes="(max-width: 1536px) 100vw, 1536px"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1536px"
+              quality={85}
               priority
             />
           </div>
@@ -138,37 +139,42 @@ export default function ProjectPage({ params }: ProjectPageProps) {
             switch (block.type) {
               case 'paragraph':
                 return (
-                  <p key={block.id} className="text-slate-600 leading-relaxed">
+                  <p key={block.id} className="text-slate-600 leading-relaxed break-words whitespace-pre-wrap">
                     {block.content}
                   </p>
                 );
               case 'heading':
                 return (
-                  <h3 key={block.id} className="text-xl font-bold text-slate-900 mt-8 mb-4">
+                  <h3 key={block.id} className="text-xl font-bold text-slate-900 mt-8 mb-4 break-words">
                     {block.content}
                   </h3>
                 );
               case 'quote':
                 return (
-                  <blockquote key={block.id} className="border-l-4 border-primary pl-4 py-2 italic text-slate-600 bg-slate-50 rounded-r">
+                  <blockquote key={block.id} className="border-l-4 border-primary pl-4 py-2 italic text-slate-600 bg-slate-50 rounded-r break-words">
                     {block.content}
                   </blockquote>
                 );
               case 'image':
                 return (
-                  <div key={block.id} className="my-8">
-                    <img 
-                      src={block.content as string} 
-                      alt="Project content" 
-                      className="w-full rounded-lg border-2 border-slate-200"
-                    />
+                  <div key={block.id} className="my-8 relative w-full">
+                    <div className="relative w-full aspect-video rounded-lg overflow-hidden border-2 border-slate-200">
+                      <Image
+                        src={block.content as string}
+                        alt="Project content"
+                        fill
+                        className="object-contain"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 896px"
+                        quality={85}
+                      />
+                    </div>
                   </div>
                 );
               case 'list':
                 return (
-                  <ul key={block.id} className="list-disc list-inside space-y-2 text-slate-600">
+                  <ul key={block.id} className="list-disc pl-5 space-y-2 text-slate-600">
                     {(block.content as string[]).map((item, index) => (
-                      <li key={index}>{item}</li>
+                      <li key={index} className="break-words pl-2">{item}</li>
                     ))}
                   </ul>
                 );
@@ -176,7 +182,7 @@ export default function ProjectPage({ params }: ProjectPageProps) {
                 return null;
             }
           }) : (
-            <p className="text-slate-600 leading-relaxed whitespace-pre-line">
+            <p className="text-slate-600 leading-relaxed whitespace-pre-wrap break-words">
               {project.description as any}
             </p>
           )}
