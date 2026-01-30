@@ -30,6 +30,7 @@ CREATE TABLE IF NOT EXISTS projects (
   tags TEXT[] NOT NULL DEFAULT '{}',
   image TEXT NOT NULL,
   github_url TEXT,
+  custom_buttons JSONB DEFAULT '[]',
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );

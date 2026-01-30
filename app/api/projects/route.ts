@@ -58,6 +58,7 @@ export async function GET() {
       tags: project.tags,
       image: project.image,
       githubUrl: project.github_url,
+      customButtons: project.custom_buttons || [],
     }));
 
     return NextResponse.json(projectsWithBlocks);
@@ -103,7 +104,7 @@ export async function POST(request: NextRequest) {
 
     const supabase = await createServerSupabaseClient();
     const body = await request.json();
-    const { slug, title, summary, description, tags, image, githubUrl } = body;
+    const { slug, title, summary, description, tags, image, githubUrl, customButtons } = body;
 
     // Validate required fields
     if (!slug || !title || !summary || !image || !Array.isArray(tags)) {
@@ -123,6 +124,7 @@ export async function POST(request: NextRequest) {
         tags,
         image,
         github_url: githubUrl || null,
+        custom_buttons: customButtons || [],
       })
       .select()
       .single();
@@ -176,6 +178,7 @@ export async function POST(request: NextRequest) {
       })) || [],
       tags: project.tags,
       image: project.image,
+      customButtons: project.custom_buttons || [],
       githubUrl: project.github_url,
     };
 

@@ -15,6 +15,7 @@ export interface Project {
   tags: string[];
   image: string;
   githubUrl?: string;
+  customButtons?: { label: string; url: string }[];
 }
 
 /*

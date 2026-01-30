@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { getProjectBySlug } from '@/lib/projects';
+import { RichText } from '@/components/RichText';
 import { useEffect, useState, use } from 'react';
 import type { Project } from '@/lib/projects';
 
@@ -90,7 +91,7 @@ export default function ProjectPage({ params }: ProjectPageProps) {
         </div>
 
         {/* Links */}
-        <div className="flex gap-4 mb-12">
+        <div className="flex gap-4 mb-12 flex-wrap">
           {project.githubUrl && (
             <a
               href={project.githubUrl}
@@ -104,6 +105,21 @@ export default function ProjectPage({ params }: ProjectPageProps) {
               View Code
             </a>
           )}
+          
+          {project.customButtons && project.customButtons.map((btn, index) => (
+            <a
+              key={index}
+              href={btn.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-secondary inline-flex items-center gap-2"
+            >
+              <span>{btn.label}</span>
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+              </svg>
+            </a>
+          ))}
         </div>
       </div>
 
@@ -140,7 +156,7 @@ export default function ProjectPage({ params }: ProjectPageProps) {
               case 'paragraph':
                 return (
                   <p key={block.id} className="text-slate-600 leading-relaxed break-words whitespace-pre-wrap">
-                    {block.content}
+                    <RichText content={block.content as string} />
                   </p>
                 );
               case 'heading':

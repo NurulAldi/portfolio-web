@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import type { ContentBlock } from '@/lib/projects';
 import ImageUploader from './ImageUploader';
 import Image from 'next/image';
+import { RichText } from './RichText';
 
 interface BlockEditorProps {
   blocks: ContentBlock[];
@@ -17,6 +18,8 @@ export default function BlockEditor({ blocks = [], onChange }: BlockEditorProps)
   const [editingContent, setEditingContent] = useState('');
   const [listItems, setListItems] = useState<string[]>(['']);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [editingBlockId, setEditingBlockId] = useState<string | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Ensure blocks is always an array
   const safeBlocks = Array.isArray(blocks) ? blocks : [];
@@ -29,24 +32,91 @@ export default function BlockEditor({ blocks = [], onChange }: BlockEditorProps)
     { type: 'list' as BlockType, label: 'List Items', icon: '☰' },
   ];
 
-  const addBlock = () => {
+  const insertFormat = (format: '**' | '*') => {
+    if (!textareaRef.current) return;
+    
+    const start = textareaRef.current.selectionStart;
+    const end = textareaRef.current.selectionEnd;
+    const text = editingContent;
+    
+    const before = text.substring(0, start);
+    const selection = text.substring(start, end);
+    const after = text.substring(end);
+    
+    const newText = `${before}${format}${selection}${format}${after}`;
+    setEditingContent(newText);
+    
+    // Restore focus and selection
+    setTimeout(() => {
+      if (textareaRef.current) {
+        textareaRef.current.focus();
+        textareaRef.current.setSelectionRange(
+          start + format.length,
+          end + format.length
+        );
+      }
+    }, 0);
+  };
+
+  const handleSaveBlock = () => {
     if (!editingContent.trim() && selectedType !== 'list') return;
     if (selectedType === 'list' && listItems.every(item => !item.trim())) return;
 
-    const newBlock: ContentBlock = {
-      id: Date.now().toString(),
-      type: selectedType,
-      content: selectedType === 'list' 
-        ? listItems.filter(item => item.trim()) 
-        : editingContent,
-    };
+    if (editingBlockId) {
+      // Update existing
+      const updatedBlocks = safeBlocks.map(block => {
+        if (block.id === editingBlockId) {
+          return {
+            ...block,
+            type: selectedType,
+            content: selectedType === 'list' 
+              ? listItems.filter(item => item.trim()) 
+              : editingContent,
+          };
+        }
+        return block;
+      });
+      onChange(updatedBlocks);
+      setEditingBlockId(null);
+    } else {
+      // Add new
+      const newBlock: ContentBlock = {
+        id: Date.now().toString(),
+        type: selectedType,
+        content: selectedType === 'list' 
+          ? listItems.filter(item => item.trim()) 
+          : editingContent,
+      };
+      onChange([...safeBlocks, newBlock]);
+    }
 
-    onChange([...safeBlocks, newBlock]);
     setEditingContent('');
     setListItems(['']);
   };
 
+  const cancelEdit = () => {
+    setEditingBlockId(null);
+    setEditingContent('');
+    setListItems(['']);
+    setSelectedType('paragraph');
+  };
+
+  const editBlock = (block: ContentBlock) => {
+    setEditingBlockId(block.id);
+    setSelectedType(block.type);
+    if (block.type === 'list') {
+      setListItems(block.content as string[]);
+      setEditingContent('');
+    } else {
+      setEditingContent(block.content as string);
+      setListItems(['']);
+    }
+  };
+
   const removeBlock = (id: string) => {
+    if (editingBlockId === id) {
+      cancelEdit();
+    }
     onChange(safeBlocks.filter(block => block.id !== id));
   };
 
@@ -151,27 +221,61 @@ export default function BlockEditor({ blocks = [], onChange }: BlockEditorProps)
             bucketType="CONTENT_IMAGES"
           />
         ) : (
-          <textarea
-            value={editingContent}
-            onChange={(e) => setEditingContent(e.target.value)}
-            rows={selectedType === 'paragraph' ? 4 : 2}
-            className="input-field resize-none"
-            placeholder={
-              selectedType === 'paragraph' ? 'Write text paragraph here...' :
-              selectedType === 'heading' ? 'Write subheading here...' :
-              selectedType === 'quote' ? 'Write quote here...' :
-              'Enter image URL...'
-            }
-          />
+          <div className="space-y-2">
+            {selectedType === 'paragraph' && (
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => insertFormat('**')}
+                  className="px-3 py-1 bg-slate-100 hover:bg-slate-200 rounded text-sm font-bold border border-slate-300"
+                  title="Bold"
+                >
+                  B
+                </button>
+                <button
+                  type="button"
+                  onClick={() => insertFormat('*')}
+                  className="px-3 py-1 bg-slate-100 hover:bg-slate-200 rounded text-sm italic border border-slate-300 font-serif"
+                  title="Italic"
+                >
+                  I
+                </button>
+              </div>
+            )}
+            <textarea
+              ref={textareaRef}
+              value={editingContent}
+              onChange={(e) => setEditingContent(e.target.value)}
+              rows={selectedType === 'paragraph' ? 4 : 2}
+              className="input-field resize-none"
+              placeholder={
+                selectedType === 'paragraph' ? 'Write text paragraph here...' :
+                selectedType === 'heading' ? 'Write subheading here...' :
+                selectedType === 'quote' ? 'Write quote here...' :
+                'Enter image URL...'
+              }
+            />
+          </div>
         )}
 
-        <button
-          type="button"
-          onClick={addBlock}
-          className="mt-3 btn-primary"
-        >
-          + Add Block
-        </button>
+        <div className="flex gap-2 mt-3">
+          <button
+            type="button"
+            onClick={handleSaveBlock}
+            className="btn-primary"
+          >
+            {editingBlockId ? 'Update Block' : '+ Add Block'}
+          </button>
+          {editingBlockId && (
+            <button
+              type="button"
+              onClick={cancelEdit}
+              className="px-4 py-2 border border-slate-300 rounded-lg hover:bg-slate-50 text-slate-700 font-medium transition-colors"
+            >
+              Cancel Edit
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Blocks List */}
@@ -232,8 +336,18 @@ export default function BlockEditor({ blocks = [], onChange }: BlockEditorProps)
                     </button>
                     <button
                       type="button"
+                      onClick={() => editBlock(block)}
+                      className="p-1 text-blue-400 hover:text-blue-600 ml-2"
+                      title="Edit"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      </svg>
+                    </button>
+                    <button
+                      type="button"
                       onClick={() => removeBlock(block.id)}
-                      className="p-1 text-red-400 hover:text-red-600 ml-2"
+                      className="p-1 text-red-400 hover:text-red-600"
                       title="Remove"
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -265,7 +379,13 @@ export default function BlockEditor({ blocks = [], onChange }: BlockEditorProps)
                       />
                     </div>
                   ) : (
-                    <div className="line-clamp-2">{block.content}</div>
+                    <div className="line-clamp-2">
+                      {block.type === 'paragraph' ? (
+                        <RichText content={block.content as string} />
+                      ) : (
+                        block.content
+                      )}
+                    </div>
                   )}
                 </div>
 

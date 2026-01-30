@@ -23,6 +23,10 @@ export default function ProjectForm({ project, onSubmit, onCancel }: ProjectForm
   const [tags, setTags] = useState<string[]>(project?.tags || []);
   const [tagInput, setTagInput] = useState('');
   
+  const [customButtons, setCustomButtons] = useState<{ label: string; url: string }[]>(
+    project?.customButtons || []
+  );
+  
   const [descriptionBlocks, setDescriptionBlocks] = useState<ContentBlock[]>(
     Array.isArray(project?.description) ? project.description : []
   );
@@ -41,9 +45,26 @@ export default function ProjectForm({ project, onSubmit, onCancel }: ProjectForm
       tags: tags,
       image: formData.image,
       githubUrl: formData.githubUrl || undefined,
+      customButtons: customButtons,
     };
     
     onSubmit(projectData);
+  };
+
+  const handleAddButton = () => {
+    if (customButtons.length < 2) {
+      setCustomButtons([...customButtons, { label: 'Demo', url: 'https://' }]);
+    }
+  };
+
+  const handleUpdateButton = (index: number, key: 'label' | 'url', value: string) => {
+    const newButtons = [...customButtons];
+    newButtons[index] = { ...newButtons[index], [key]: value };
+    setCustomButtons(newButtons);
+  };
+
+  const handleRemoveButton = (index: number) => {
+    setCustomButtons(customButtons.filter((_, i) => i !== index));
   };
 
   const handleAddTag = () => {
@@ -187,6 +208,57 @@ export default function ProjectForm({ project, onSubmit, onCancel }: ProjectForm
             className="input-field"
             placeholder="https://github.com/username/repo"
           />
+        </div>
+
+        {/* Custom Buttons */}
+        <div>
+          <label className="block text-sm font-semibold text-slate-900 mb-2">
+            Custom Buttons (Max 2)
+          </label>
+          <div className="space-y-3">
+            {customButtons.map((btn, index) => (
+              <div key={index} className="flex gap-2 items-start p-3 border rounded-lg bg-slate-50">
+                <div className="flex-1 space-y-2">
+                  <input
+                    type="text"
+                    value={btn.label}
+                    onChange={(e) => handleUpdateButton(index, 'label', e.target.value)}
+                    className="input-field text-sm"
+                    placeholder="Button Label"
+                  />
+                  <input
+                    type="url"
+                    value={btn.url}
+                    onChange={(e) => handleUpdateButton(index, 'url', e.target.value)}
+                    className="input-field text-sm"
+                    placeholder="Button URL (https://...)"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleRemoveButton(index)}
+                  className="text-red-500 hover:text-red-700 p-1"
+                  title="Remove Button"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            ))}
+            {customButtons.length < 2 && (
+              <button
+                type="button"
+                onClick={handleAddButton}
+                className="text-sm font-medium text-primary hover:text-primary/80 flex items-center gap-1"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                Add Custom Button
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Action Buttons */}

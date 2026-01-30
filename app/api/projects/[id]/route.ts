@@ -53,6 +53,7 @@ export async function GET(
       tags: project.tags,
       image: project.image,
       githubUrl: project.github_url,
+      customButtons: project.custom_buttons || [],
     };
 
     return NextResponse.json(completeProject);
@@ -102,7 +103,7 @@ export async function PUT(
     const supabase = await createServerSupabaseClient();
     const { id } = await params;
     const body = await request.json();
-    const { slug, title, summary, description, tags, image, githubUrl } = body;
+    const { slug, title, summary, description, tags, image, githubUrl, customButtons } = body;
 
     // Update project
     const { data: project, error: projectError } = await supabase
@@ -114,6 +115,7 @@ export async function PUT(
         tags,
         image,
         github_url: githubUrl || null,
+        custom_buttons: customButtons || [],
       })
       .eq('id', id)
       .select()
@@ -173,6 +175,7 @@ export async function PUT(
       tags: project.tags,
       image: project.image,
       githubUrl: project.github_url,
+      customButtons: project.custom_buttons || [],
     };
 
     return NextResponse.json(completeProject);
