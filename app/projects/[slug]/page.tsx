@@ -36,9 +36,9 @@ export default function ProjectPage({ params }: ProjectPageProps) {
 
   if (loading) {
     return (
-      <div className="section-container py-16">
-        <div className="max-w-4xl mx-auto text-center">
-          <div className="animate-pulse">Loading...</div>
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
+        <div className="text-center">
+          <div className="animate-pulse text-slate-500">Loading...</div>
         </div>
       </div>
     );
@@ -49,7 +49,7 @@ export default function ProjectPage({ params }: ProjectPageProps) {
   }
 
   return (
-    <div className="section-container py-16">
+    <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
       {/* Back Button */}
       <Link 
         href="/projects"
@@ -67,14 +67,12 @@ export default function ProjectPage({ params }: ProjectPageProps) {
       </Link>
 
       {/* Project Header */}
-      <div className="max-w-4xl">
-        <div className="mb-6">
-          <h1 className="text-4xl md:text-5xl font-bold text-slate-900 mb-4 break-words">
-            {project.title}
-          </h1>
-        </div>
+      <div className="mb-6">
+        <h1 className="text-3xl md:text-5xl font-bold text-slate-900 mb-6 break-words tracking-tight leading-tight">
+          {project.title}
+        </h1>
 
-        <p className="text-xl text-slate-600 mb-8 break-words">
+        <p className="text-xl md:text-2xl text-slate-600 mb-8 break-words leading-relaxed">
           {project.summary}
         </p>
 
@@ -124,21 +122,18 @@ export default function ProjectPage({ params }: ProjectPageProps) {
       </div>
 
       {/* Project Image */}
-      <div className="max-w-6xl mb-12">
+      <div className="mb-12 flex justify-center">
         {project.image ? (
-          <div className="aspect-video bg-slate-100 rounded-lg overflow-hidden border-2 border-slate-200 relative">
-            <Image
+          <div className="inline-block max-w-full rounded-lg overflow-hidden border border-slate-200 bg-slate-50">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
               src={project.image}
               alt={project.title}
-              fill
-              className="object-cover"
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1536px"
-              quality={85}
-              priority
+              className="w-auto h-auto max-w-full max-h-[70vh] object-contain"
             />
           </div>
         ) : (
-          <div className="aspect-video bg-slate-100 rounded-lg overflow-hidden border-2 border-slate-200 flex items-center justify-center">
+          <div className="inline-block w-full max-w-3xl aspect-video bg-slate-50 rounded-lg overflow-hidden border border-slate-200 flex items-center justify-center">
             <div className="text-slate-400">
               <svg className="w-24 h-24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -149,48 +144,46 @@ export default function ProjectPage({ params }: ProjectPageProps) {
       </div>
 
       {/* Project Description */}
-      <div className="max-w-4xl">
-        <div className="prose prose-lg max-w-none space-y-6">
+      <div>
+        <div className="prose prose-lg md:prose-xl prose-slate max-w-none">
           {Array.isArray(project.description) ? project.description.map((block) => {
             switch (block.type) {
               case 'paragraph':
                 return (
-                  <p key={block.id} className="text-slate-600 leading-relaxed break-words whitespace-pre-wrap">
+                  <p key={block.id} className="text-slate-800 leading-loose break-words whitespace-pre-wrap mb-8">
                     <RichText content={block.content as string} />
                   </p>
                 );
               case 'heading':
                 return (
-                  <h3 key={block.id} className="text-xl font-bold text-slate-900 mt-8 mb-4 break-words">
+                  <h2 key={block.id} className="text-2xl md:text-3xl font-bold text-slate-900 mt-12 mb-6 break-words tracking-tight">
                     {block.content}
-                  </h3>
+                  </h2>
                 );
               case 'quote':
                 return (
-                  <blockquote key={block.id} className="border-l-4 border-primary pl-4 py-2 italic text-slate-600 bg-slate-50 rounded-r break-words">
+                  <blockquote key={block.id} className="border-l-4 border-slate-800 pl-6 py-2 my-8 italic text-slate-700 bg-transparent break-words text-xl md:text-2xl font-light">
                     {block.content}
                   </blockquote>
                 );
               case 'image':
                 return (
-                  <div key={block.id} className="my-8 relative w-full">
-                    <div className="relative w-full aspect-video rounded-lg overflow-hidden border-2 border-slate-200">
-                      <Image
+                  <figure key={block.id} className="my-12 flex justify-center">
+                    <div className="inline-block max-w-full rounded-lg overflow-hidden bg-slate-50 border border-slate-100">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
                         src={block.content as string}
                         alt="Project content"
-                        fill
-                        className="object-contain"
-                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 896px"
-                        quality={85}
+                        className="w-auto h-auto max-w-full max-h-[70vh] object-contain"
                       />
                     </div>
-                  </div>
+                  </figure>
                 );
               case 'list':
                 return (
-                  <ul key={block.id} className="list-disc pl-5 space-y-2 text-slate-600">
+                  <ul key={block.id} className="list-disc pl-6 space-y-3 mb-8 text-slate-800 leading-relaxed">
                     {(block.content as string[]).map((item, index) => (
-                      <li key={index} className="break-words pl-2">{item}</li>
+                      <li key={index} className="break-words">{item}</li>
                     ))}
                   </ul>
                 );
@@ -198,7 +191,7 @@ export default function ProjectPage({ params }: ProjectPageProps) {
                 return null;
             }
           }) : (
-            <p className="text-slate-600 leading-relaxed whitespace-pre-wrap break-words">
+            <p className="text-slate-800 leading-loose whitespace-pre-wrap break-words">
               {project.description as any}
             </p>
           )}
