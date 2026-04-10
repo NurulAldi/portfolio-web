@@ -11,8 +11,8 @@ export const metadata: Metadata = {
     default: 'Nurul Aldi\'s Portfolio',
     template: '%s | Portfolio'
   },
-  description: 'Professional portfolio showcasing data analysis projects and expertise in Machine Learning, Statistical Analysis, and Data Visualization',
-  keywords: ['data analyst', 'machine learning', 'data analysis', 'statistical analysis', 'python', 'portfolio'],
+  description: 'Professional portfolio showcasing data engineering projects and expertise in ETL, Data Warehousing, Big Data, and Cloud Infrastructure',
+  keywords: ['data engineer', 'big data', 'data pipeline', 'etl', 'python', 'sql', 'portfolio'],
 };
 
 export default function RootLayout({

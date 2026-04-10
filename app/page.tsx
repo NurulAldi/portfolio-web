@@ -87,15 +87,15 @@ export default function HomePage() {
 
             {/* Tagline */}
             <p className="text-xl md:text-2xl lg:text-3xl font-semibold text-slate-700 max-w-4xl mx-auto leading-tight text-balance">
-              I transform <span className="text-primary">data</span> into{' '}
-              <span className="text-primary">actionable insights</span>
+              I build <span className="text-primary">scalable data</span> pipelines and{' '}
+              <span className="text-primary">architectures</span>
             </p>
 
             {/* Description */}
             <p className="text-base md:text-lg lg:text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed">
-              Data analyst with expertise in machine learning and statistical analysis. 
-              I uncover patterns, build predictive models, and create data-driven solutions 
-              that drive business impact.
+              Data engineer with expertise in building robust data pipelines, ETL processes, and cloud-based data warehouses. 
+              I design, develop, and maintain large-scale data systems 
+              that support analytical and operational initiatives.
             </p>
 
             {/* CTA Buttons */}
@@ -126,8 +126,8 @@ export default function HomePage() {
               My Projects
             </h2>
             <p className="text-base md:text-lg lg:text-xl text-slate-600">
-              A collection of data analytics projects leveraging machine learning and analytics. 
-              Each project demonstrates different techniques for extracting insights and solving complex problems with data.
+              A collection of data engineering projects focusing on data pipelines, architecture, and cloud infrastructure. 
+              Each project demonstrates different techniques for processing large datasets and solving complex data challenges.
             </p>
           </div>
 
@@ -164,7 +164,7 @@ export default function HomePage() {
               Get in Touch
             </h2>
             <p className="text-base md:text-lg lg:text-xl text-slate-600 max-w-2xl mx-auto">
-              Have a data challenge or want to collaborate on analytics? I'd love to hear from you. 
+              Have a data challenge or want to collaborate on data engineering? I'd love to hear from you. 
               Fill out the form below and I'll get back to you as soon as possible.
             </p>
           </div>

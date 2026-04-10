@@ -159,7 +159,7 @@ export default function ProjectForm({ project, onSubmit, onCancel }: ProjectForm
             onChange={(e) => setTagInput(e.target.value)}
             onKeyDown={handleTagInputKeyDown}
             className="input-field"
-            placeholder="Enter tag (e.g., Python, Machine Learning, Data Analysis)"
+            placeholder="Enter tag (e.g., Python, Apache Spark, Data Engineering)"
             disabled={tags.length >= 5}
           />
           {tags.length < 5 && (
